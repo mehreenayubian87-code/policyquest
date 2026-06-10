@@ -122,7 +122,7 @@ export default async function GuidePage({
 
         <div className="outputPanel">
           <h3>Scoring interpretation</h3>
-          <p>Emerging Idea means the concept needs sharper evidence or feasibility. Feasible Pilot means it can be tested but may need stronger inclusion. Strong Co-Design Plan means the idea balances lived experience and delivery. Policy Champion means the team has a credible, inclusive, testable plan with strong event responses.</p>
+          <p>Policy assessment is generated only after teams record evidence use, resource allocation, event responses, stakeholder votes, and meaningful final outputs. Scores should be discussed as traceable judgements, not automatic grades.</p>
         </div>
 
         <div className="outputPanel">

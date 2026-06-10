@@ -1200,6 +1200,39 @@ nextjs-portal {
   font-size: 1.4rem;
 }
 
+.scoreControl.staticScore {
+  align-content: start;
+  min-height: 110px;
+}
+
+.scoreControl.staticScore strong {
+  line-height: 1.1;
+}
+
+.reviewButtonRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.reviewScore {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 34px;
+}
+
+.reviewScore:hover,
+.reviewScore.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+
 .totalScore {
   border-radius: 8px;
   background: var(--ink);
@@ -1258,6 +1291,30 @@ nextjs-portal {
 
 .readinessScore span {
   color: var(--orange);
+}
+
+.assessmentPending {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #b9ddd6;
+  border-radius: 8px;
+  background: #f3fbfa;
+  padding: 18px;
+}
+
+.assessmentPending strong {
+  color: var(--teal);
+  font-size: 1.35rem;
+}
+
+.assessmentPending span {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.assessmentPending p,
+.assessmentPending small {
+  color: var(--muted);
 }
 
 .evidenceGrid,

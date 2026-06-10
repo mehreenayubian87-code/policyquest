@@ -98,8 +98,9 @@ export default function RolesClient({
 
         <div className="facilitatorReveal">
           <button className="button light full" onClick={() => setShowFacilitatorRoles((current) => !current)}>
-            {showFacilitatorRoles ? "Hide Role Cards" : "Reveal Role Cards"}
+            {showFacilitatorRoles ? "Hide Role Cards" : "Facilitator Only: Reveal Role Cards"}
           </button>
+          <p className="warningText">Use only during final debrief or facilitator review.</p>
           <p className="mutedText">Facilitator only. Keep hidden priorities private until final debrief.</p>
         </div>
 

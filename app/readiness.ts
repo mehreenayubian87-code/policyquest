@@ -1,26 +1,24 @@
 import type { WorkspaceState } from "./types";
 
-export type ReadinessResult = {
-  baseScore: number;
-  score: number;
-  category: "Needs Major Revision" | "Needs Revision" | "Emerging Pilot" | "Pilot Ready";
-  meaningfulSections: Record<string, boolean>;
-  completedSections: number;
-  completionStatus: "Incomplete" | "Partial" | "Complete";
-  checks: {
-    label: string;
-    met: boolean;
-    warning: string;
-  }[];
-  stakeholderWarning: string;
-  rubric: {
-    evidenceUse: number;
+export type SimulationAssessment = {
+  ready: boolean;
+  status: "Not yet assessed" | "Assessed";
+  message: string;
+  missing: string[];
+  scores?: {
+    inclusion: number;
     feasibility: number;
+    impact: number;
     equity: number;
-    stakeholderEngagement: number;
-    testingPlan: number;
-    comments: string[];
+    sustainability: number;
   };
+  overall?: number;
+  strengths: string[];
+  improvements: string[];
+  trace: {
+    label: string;
+    evidence: string;
+  }[];
 };
 
 const weakResponses = new Set([
@@ -47,21 +45,6 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-export function calculatePolicyImpactScore(state: WorkspaceState) {
-  const totalScore = Object.values(state.scores).reduce((sum, score) => sum + score, 0);
-  const resourceEffectTotal = Object.values(state.resourceEffects).reduce((sum, effect) => sum + effect, 0);
-
-  return clamp(
-    totalScore * 3 +
-      state.selectedTokens.length * 3 +
-      Math.min(5, state.eventQualityTotal) * 4 +
-      Math.max(0, resourceEffectTotal) * 2 +
-      state.facilitatorActions,
-    0,
-    100
-  );
-}
-
 export function calculateApprovalPercentage(state: WorkspaceState) {
   const voteValues = Object.values(state.stakeholderVotes);
   const supportCount = voteValues.filter((vote) => vote === "support").length;
@@ -72,127 +55,99 @@ export function calculateApprovalPercentage(state: WorkspaceState) {
   return castVotes > 0 ? Math.round(((supportCount + changesCount * 0.5) / castVotes) * 100) : state.approvalPercentage;
 }
 
-export function calculateReadiness(state: WorkspaceState): ReadinessResult {
-  const policyImpactScore = calculatePolicyImpactScore(state);
-  const approvalPercentage = calculateApprovalPercentage(state);
-  const eventResponseCompleted = state.eventHistory.some((event) => event.selectedChoice);
-  const successMeasuresComplete = isMeaningfulContent(state.outputs.measures);
-  const meaningfulSections = {
-    accessProblem: isMeaningfulContent(state.outputs.problem),
-    keyInsight: isMeaningfulContent(state.outputs.insight),
-    serviceImprovementIdea: isMeaningfulContent(state.outputs.idea),
-    prototypeJourney: isMeaningfulContent(state.outputs.prototype),
-    equityAdjustment: isMeaningfulContent(state.outputs.equity),
-    firstTest: isMeaningfulContent(state.outputs.test)
-  };
-  const completedSections = Object.values(meaningfulSections).filter(Boolean).length;
-  const completionStatus =
-    completedSections === 6 ? "Complete" : completedSections >= 4 ? "Partial" : "Incomplete";
-  const evidenceMet = state.selectedEvidence.length >= 2;
-  const constraintMet = state.selectedConstraints.length >= 1;
-  const approvalMet = approvalPercentage >= 60;
-  const feasibilityMet = state.scores.feasibility >= 3;
-  const equityMet = state.scores.equity >= 3;
-  const pilotReadyRequirements =
-    completedSections === 6 &&
-    evidenceMet &&
-    constraintMet &&
-    eventResponseCompleted &&
-    successMeasuresComplete &&
-    approvalMet &&
-    feasibilityMet &&
-    equityMet;
-  const baseScore = clamp(
-    Math.round(
-      state.scores.feasibility * 9 +
-        state.scores.equity * 8 +
-        approvalPercentage * 0.2 +
-        Math.min(3, state.selectedTokens.length) * 4 +
-        Math.min(4, state.selectedEvidence.length) * 4 +
-        Math.min(3, state.selectedConstraints.length) * 3 +
-        (eventResponseCompleted ? 10 : 0) +
-        (successMeasuresComplete ? 8 : 0) +
-        policyImpactScore * 0.1
-    ),
-    0,
-    100
-  );
-  let score = baseScore;
+function scoreFromEvidence(count: number) {
+  return clamp(1 + count, 1, 5);
+}
 
-  if (completedSections < 6) {
-    score = Math.min(score, 69);
+function scoreFromVotes(state: WorkspaceState) {
+  const voteValues = Object.values(state.stakeholderVotes);
+  const castVotes = voteValues.length;
+  const approval = calculateApprovalPercentage(state);
+
+  if (castVotes === 0) {
+    return 1;
   }
 
-  if (!eventResponseCompleted) {
-    score = Math.min(score, 79);
+  return approval >= 80 ? 5 : approval >= 65 ? 4 : approval >= 50 ? 3 : approval >= 30 ? 2 : 1;
+}
+
+function scoreFromMeaningfulContent(...values: string[]) {
+  const count = values.filter(isMeaningfulContent).length;
+  return clamp(1 + count, 1, 5);
+}
+
+export function calculateSimulationAssessment(state: WorkspaceState): SimulationAssessment {
+  const eventResponses = state.eventHistory.filter((event) => event.selectedChoice);
+  const voteCount = Object.values(state.stakeholderVotes).filter((vote) => vote !== "none").length;
+  const meaningfulPlanSections = [
+    state.outputs.problem,
+    state.outputs.insight,
+    state.outputs.idea,
+    state.outputs.prototype,
+    state.outputs.equity,
+    state.outputs.test
+  ].filter(isMeaningfulContent).length;
+  const missing = [
+    state.selectedEvidence.length >= 2 ? "" : "Use at least 2 evidence cards",
+    state.selectedTokens.length > 0 ? "" : "Allocate resources",
+    state.selectedConstraints.length > 0 ? "" : "Select at least 1 constraint",
+    eventResponses.length > 0 ? "" : "Respond to at least 1 policy event",
+    voteCount >= 4 ? "" : "Complete stakeholder voting",
+    meaningfulPlanSections >= 4 ? "" : "Complete key final output fields"
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
+    return {
+      ready: false,
+      status: "Not yet assessed",
+      message: "Results will be generated after completing the simulation and responding to policy events.",
+      missing,
+      strengths: [],
+      improvements: [],
+      trace: []
+    };
   }
 
-  if (!successMeasuresComplete) {
-    score = Math.min(score, 79);
-  }
-
-  let category: ReadinessResult["category"] =
-    score >= 85 && pilotReadyRequirements
-      ? "Pilot Ready"
-      : score >= 70
-        ? "Emerging Pilot"
-        : score >= 40
-          ? "Needs Revision"
-          : "Needs Major Revision";
-
-  if (!pilotReadyRequirements && category === "Pilot Ready") {
-    category = "Emerging Pilot";
-  }
-
-  if (completedSections < 6 && score > 69) {
-    category = "Needs Revision";
-  }
-
-  const allSupport = Object.values(state.stakeholderVotes).length > 0 &&
-    Object.values(state.stakeholderVotes).every((vote) => vote === "support");
-  const stakeholderWarning =
-    allSupport &&
-    (state.scores.feasibility < 4 ||
-      state.scores.equity < 4 ||
-      state.selectedConstraints.length > 0 ||
-      !eventResponseCompleted)
-      ? "High stakeholder approval may be unrealistic. Ask whether any stakeholder would support only with changes."
-      : "";
-  const testingPlanScore = successMeasuresComplete && meaningfulSections.firstTest ? 5 : meaningfulSections.firstTest ? 3 : 1;
-  const evidenceUse = evidenceMet ? 4 + Math.min(1, state.selectedEvidence.length - 2) : Math.max(1, state.selectedEvidence.length + 1);
-  const stakeholderEngagement = approvalPercentage >= 70 ? 4 : approvalPercentage >= 50 ? 3 : 2;
-  const comments = [
-    evidenceMet ? "Evidence requirement met." : "Evidence requirement is incomplete.",
-    successMeasuresComplete ? "Testing detail is present." : "The proposal needs stronger testing detail.",
-    meaningfulSections.equityAdjustment ? "Equity considerations are recorded." : "Equity considerations are incomplete.",
-    eventResponseCompleted ? "An event response was recorded." : "No event response was recorded, so implementation readiness is limited.",
-    stakeholderWarning || (state.scores.feasibility < 4 ? "Stakeholder approval should be checked against feasibility concerns." : "")
+  const approvalScore = scoreFromVotes(state);
+  const eventQualityScore = clamp(2 + Math.min(3, state.eventQualityTotal), 1, 5);
+  const evidenceScore = scoreFromEvidence(state.selectedEvidence.length);
+  const resourceScore = clamp(1 + state.selectedTokens.length, 1, 5);
+  const constraintPenalty = Math.min(2, state.selectedConstraints.length);
+  const inclusion = clamp(Math.round((approvalScore + evidenceScore + scoreFromMeaningfulContent(state.outputs.insight, state.outputs.equity)) / 3), 1, 5);
+  const feasibility = clamp(Math.round((resourceScore + eventQualityScore + (state.selectedConstraints.length > 0 ? 3 : 1)) / 3), 1, 5);
+  const impact = clamp(Math.round((eventQualityScore + evidenceScore + scoreFromMeaningfulContent(state.outputs.idea, state.outputs.test, state.outputs.measures)) / 3), 1, 5);
+  const equity = clamp(Math.round((scoreFromMeaningfulContent(state.outputs.equity, state.outputs.problem) + approvalScore + evidenceScore) / 3), 1, 5);
+  const sustainability = clamp(Math.round((resourceScore + eventQualityScore + 4 - constraintPenalty) / 3), 1, 5);
+  const scores = { inclusion, feasibility, impact, equity, sustainability };
+  const overall = Object.values(scores).reduce((sum, score) => sum + score, 0);
+  const strengths = [
+    inclusion >= 4 ? "Strong community inclusion" : "",
+    equity >= 4 ? "High equity" : "",
+    impact >= 4 ? "Clear potential impact" : "",
+    evidenceScore >= 4 ? "Evidence-informed decisions" : ""
+  ].filter(Boolean);
+  const improvements = [
+    feasibility <= 3 ? "Moderate implementation feasibility" : "",
+    sustainability <= 3 ? "Resource or sustainability constraints" : "",
+    state.selectedConstraints.length > 0 ? "Budget, capacity, or governance constraints need management" : "",
+    approvalScore <= 3 ? "Stakeholder support needs further negotiation" : ""
   ].filter(Boolean);
 
   return {
-    baseScore,
-    score,
-    category,
-    meaningfulSections,
-    completedSections,
-    completionStatus,
-    checks: [
-      { label: "Evidence requirement met", met: evidenceMet, warning: "Select at least 2 evidence cards" },
-      { label: "Constraint addressed", met: constraintMet, warning: "Select at least 1 constraint card" },
-      { label: "Stakeholder approval achieved", met: approvalMet, warning: "Approval needs to reach at least 60%" },
-      { label: "Event response completed", met: eventResponseCompleted, warning: "Draw and respond to at least 1 event" },
-      { label: "Success measures complete", met: successMeasuresComplete, warning: "Write meaningful success measures" },
-      { label: "Prototype has detail", met: meaningfulSections.prototypeJourney, warning: "Prototype/Journey needs more detail" },
-      { label: "Equity adjustment complete", met: meaningfulSections.equityAdjustment, warning: "Equity adjustment is incomplete" }
-    ],
-    stakeholderWarning,
-    rubric: {
-      evidenceUse: clamp(evidenceUse, 1, 5),
-      feasibility: state.scores.feasibility,
-      equity: state.scores.equity,
-      stakeholderEngagement: clamp(stakeholderEngagement, 1, 5),
-      testingPlan: testingPlanScore,
-      comments
-    }
+    ready: true,
+    status: "Assessed",
+    message: "Scores are generated from recorded evidence use, resources, event choices, stakeholder votes, and written outputs.",
+    missing: [],
+    scores,
+    overall,
+    strengths: strengths.length ? strengths : ["Balanced policy proposal"],
+    improvements: improvements.length ? improvements : ["Continue testing before wider implementation"],
+    trace: [
+      { label: "Evidence use", evidence: `${state.selectedEvidence.length} evidence cards selected` },
+      { label: "Resource allocation", evidence: `${state.selectedTokens.length} resources selected` },
+      { label: "Policy events", evidence: `${eventResponses.length} event response recorded` },
+      { label: "Stakeholder discussion", evidence: `${voteCount} stakeholder votes submitted` },
+      { label: "Plan completeness", evidence: `${meaningfulPlanSections}/6 key plan sections completed` }
+    ]
   };
 }

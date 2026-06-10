@@ -21,8 +21,8 @@ export default function ContextPage() {
             <h2>{context.name}</h2>
             <p>{context.description}</p>
             <div className="miniList">
-              {context.references.slice(0, 3).map((reference) => (
-                <span key={`${reference.organisation}-${reference.title}`}>{reference.organisation}</span>
+              {context.themes.map((theme) => (
+                <span key={theme}>{theme}</span>
               ))}
             </div>
             <Link className="button primary full" href={`/select?context=${context.id}`}>

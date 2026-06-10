@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { contextPacks, getIssuePack, policyIssues, resourceTokens } from "../data";
 import { defaultScores, defaultTimer, emptyAssistantOutputs, emptyOutputs, type WorkspaceState } from "../types";
-import { calculateApprovalPercentage, calculatePolicyImpactScore, calculateReadiness } from "../readiness";
+import { calculateApprovalPercentage, calculateSimulationAssessment } from "../readiness";
 
 const storageKey = "policyquest-workspace";
 
@@ -27,7 +27,6 @@ function createInitialState(issueId: string): WorkspaceState {
     eventQualityTotal: 0,
     facilitatorActions: 0,
     approvalPercentage: 0,
-    implementationReadinessScore: 0,
     team: {
       name: "",
       members: ""
@@ -65,7 +64,6 @@ function normalizeState(saved: Partial<WorkspaceState>): WorkspaceState {
     eventQualityTotal: saved.eventQualityTotal ?? base.eventQualityTotal,
     facilitatorActions: saved.facilitatorActions ?? base.facilitatorActions,
     approvalPercentage: saved.approvalPercentage ?? base.approvalPercentage,
-    implementationReadinessScore: saved.implementationReadinessScore ?? base.implementationReadinessScore,
     team: {
       ...base.team,
       ...saved.team
@@ -91,8 +89,8 @@ function normalizeState(saved: Partial<WorkspaceState>): WorkspaceState {
   };
 }
 
-function saveSessionState(state: WorkspaceState, readinessOverride?: number) {
-  const policyImpactScore = calculatePolicyImpactScore(state);
+function saveSessionState(state: WorkspaceState) {
+  const assessment = calculateSimulationAssessment(state);
 
   window.localStorage.setItem(storageKey, JSON.stringify(state));
   window.localStorage.setItem("policyquest-selectedEvidence", JSON.stringify(state.selectedEvidence));
@@ -103,8 +101,13 @@ function saveSessionState(state: WorkspaceState, readinessOverride?: number) {
   window.localStorage.setItem("policyquest-stakeholderVotes", JSON.stringify(state.stakeholderVotes));
   window.localStorage.setItem("policyquest-scoreDashboard", JSON.stringify(state.scores));
   window.localStorage.setItem("policyquest-difficulty", JSON.stringify(state.difficulty));
-  window.localStorage.setItem("policyquest-policyImpactScore", JSON.stringify(policyImpactScore));
-  window.localStorage.setItem("policyquest-implementationReadiness", JSON.stringify(readinessOverride ?? state.implementationReadinessScore));
+  if (assessment.ready) {
+    window.localStorage.setItem("policyquest-policyAssessment", JSON.stringify(assessment));
+  } else {
+    window.localStorage.removeItem("policyquest-policyAssessment");
+    window.localStorage.removeItem("policyquest-policyImpactScore");
+    window.localStorage.removeItem("policyquest-implementationReadiness");
+  }
 }
 
 function fallback(value: string, text: string) {
@@ -151,28 +154,23 @@ export default function FinalPage() {
   const evidencePack = issuePack.evidence;
   const selectedEvidence = evidencePack.filter((evidence) => state.selectedEvidence.includes(evidence.id));
   const selectedConstraints = issuePack.constraints.filter((constraint) => state.selectedConstraints.includes(constraint.id));
-  const totalScore = Object.values(state.scores).reduce((sum, score) => sum + score, 0);
   const voteValues = Object.values(state.stakeholderVotes);
   const supportCount = voteValues.filter((vote) => vote === "support").length;
   const changesCount = voteValues.filter((vote) => vote === "changes").length;
   const opposeCount = voteValues.filter((vote) => vote === "oppose").length;
   const castVotes = supportCount + changesCount + opposeCount;
   const approvalPercentage = calculateApprovalPercentage(state);
-  const policyImpactScore = calculatePolicyImpactScore(state);
-  const rating =
-    policyImpactScore >= 86
-      ? "Policy Champion"
-      : policyImpactScore >= 70
-        ? "Strong Co-Design Plan"
-        : policyImpactScore >= 52
-          ? "Feasible Pilot"
-          : "Emerging Idea";
-  const readiness = calculateReadiness(state);
-  const implementationReadinessScore = readiness.score;
+  const assessment = calculateSimulationAssessment(state);
+  const rating = assessment.ready
+    ? (assessment.overall ?? 0) >= 21
+      ? "Strong Co-Design Plan"
+      : (assessment.overall ?? 0) >= 17
+        ? "Promising Pilot"
+        : "Needs Revision"
+    : "Not yet assessed";
   const eventDecisionLines = state.eventHistory
     .filter((event) => event.selectedChoice)
     .map((event) => `${event.title}: ${event.selectedChoice?.label}`);
-  const readinessStatus = readiness.category;
   const selectedResourceNames = selectedTokens.map((token) => token.name);
   const selectedEvidenceNames = selectedEvidence.map((evidence) => evidence.title);
   const selectedConstraintNames = selectedConstraints.map((constraint) => constraint.title);
@@ -181,10 +179,10 @@ export default function FinalPage() {
   const referenceLines = issuePack.references.map((reference) => `${reference.organisation} - ${reference.title} (${reference.year})`);
   const achievements = [
     state.selectedEvidence.length >= 2 ? "Evidence Champion" : "",
-    state.scores.equity >= 4 && readiness.meaningfulSections.equityAdjustment ? "Equity Champion" : "",
+    assessment.ready && (assessment.scores?.equity ?? 0) >= 4 ? "Equity Champion" : "",
     approvalPercentage >= 70 ? "Consensus Builder" : "",
-    state.selectedConstraints.length >= 1 && state.scores.feasibility >= 4 ? "Implementation Thinker" : "",
-    state.scores.innovation >= 4 ? "Policy Innovator" : "",
+    state.selectedConstraints.length >= 1 && state.selectedTokens.length > 0 ? "Implementation Thinker" : "",
+    assessment.ready && (assessment.scores?.impact ?? 0) >= 4 ? "Policy Innovator" : "",
     Object.values(state.stakeholderVotes).filter((vote) => vote === "changes" || vote === "support").length >= 3 ? "Community Builder" : ""
   ].filter(Boolean);
 
@@ -193,8 +191,8 @@ export default function FinalPage() {
       return;
     }
 
-    saveSessionState(state, implementationReadinessScore);
-  }, [hasLoadedSession, implementationReadinessScore, state]);
+    saveSessionState(state);
+  }, [hasLoadedSession, state]);
 
   function updateAssistantOutput(field: keyof WorkspaceState["assistantOutputs"], value: string) {
     setState((current) => ({
@@ -237,6 +235,12 @@ ${fallback(state.outputs.measures, "No response recorded")}
 10. Risks and Challenges
 ${listOrFallback([...eventDecisionLines, ...selectedConstraintNames], "No response recorded")}
 
+Assessment Status
+${assessment.ready ? `Overall Policy Score: ${assessment.overall}/25` : assessment.message}
+
+Score Trace
+${assessment.ready ? assessment.trace.map((item) => `${item.label}: ${item.evidence}`).join("\n") : assessment.missing.join("\n")}
+
 References Used
 ${referenceLines.join("\n")}`;
 
@@ -265,6 +269,9 @@ ${fallback(state.outputs.test, "No response recorded")}
 7. Evidence Needed Before Scaling
 ${listOrFallback(selectedEvidenceNames, fallback(state.outputs.measures, "No response recorded"))}
 
+Assessment Reflection
+${assessment.ready ? `Strengths: ${assessment.strengths.join("; ")}\nAreas for improvement: ${assessment.improvements.join("; ")}` : assessment.message}
+
 References Used
 ${referenceLines.join("\n")}`;
 
@@ -281,8 +288,8 @@ ${issue.title}
 Difficulty Level
 ${state.difficulty}
 
-Policy Impact Score
-${policyImpactScore}/100
+Assessment Status
+${assessment.ready ? `Overall Policy Score: ${assessment.overall}/25` : "Not yet assessed"}
 
 Resources Used
 ${listOrFallback(selectedResourceNames, "No response recorded")}
@@ -297,23 +304,24 @@ Events Encountered
 ${listOrFallback(state.eventHistory.map((event) => event.title), "No response recorded")}
 
 Stakeholder Approval
-${approvalPercentage}%
-
-Implementation Readiness
-${implementationReadinessScore}/100 - ${readinessStatus}
+${castVotes > 0 ? `${approvalPercentage}%` : "Not yet assessed"}
 
 Final Rating
 ${rating}
 
-Facilitator Rubric
-Evidence Use: ${readiness.rubric.evidenceUse}/5
-Feasibility: ${readiness.rubric.feasibility}/5
-Equity: ${readiness.rubric.equity}/5
-Stakeholder Engagement: ${readiness.rubric.stakeholderEngagement}/5
-Testing Plan: ${readiness.rubric.testingPlan}/5
+Policy Evaluation
+${assessment.ready && assessment.scores ? `Inclusion: ${assessment.scores.inclusion}/5
+Feasibility: ${assessment.scores.feasibility}/5
+Impact: ${assessment.scores.impact}/5
+Equity: ${assessment.scores.equity}/5
+Sustainability: ${assessment.scores.sustainability}/5
+Overall Policy Score: ${assessment.overall}/25` : assessment.message}
 
 Facilitator Comments
-${readiness.rubric.comments.join("\n")}
+${assessment.ready ? [...assessment.strengths, ...assessment.improvements].join("\n") : assessment.missing.join("\n")}
+
+Score Trace
+${assessment.ready ? assessment.trace.map((item) => `${item.label}: ${item.evidence}`).join("\n") : "Results will be generated after completing the simulation and responding to policy events."}
 
 Assessment Prompts
 - Which stakeholder perspective was most influential?
@@ -347,13 +355,13 @@ Event Decisions Made
 ${listOrFallback(eventDecisionLines, "No response recorded")}
 
 Stakeholder Approval
-${approvalPercentage}%
+${castVotes > 0 ? `${approvalPercentage}%` : "Not yet assessed"}
 
-Implementation Readiness
-${implementationReadinessScore}/100 - ${readinessStatus}
+Policy Assessment
+${assessment.ready ? `Overall Policy Score: ${assessment.overall}/25` : assessment.message}
 
-Total Score
-${totalScore}/25
+Score Trace
+${assessment.ready ? assessment.trace.map((item) => `${item.label}: ${item.evidence}`).join("\n") : assessment.missing.join("\n")}
 
 Final Rating
 ${rating}
@@ -395,7 +403,7 @@ ${referenceLines.join("\n")}`;
           <div className="ratingBanner">
             <span>End-game rating</span>
             <strong>{rating}</strong>
-            <small>Policy Impact Score: {policyImpactScore}/100</small>
+            <small>{assessment.ready ? `Overall Policy Score: ${assessment.overall}/25` : "Complete the simulation to generate results"}</small>
           </div>
           <div className="achievementStrip">
             {achievements.length > 0 ? achievements.map((achievement) => (
@@ -552,52 +560,47 @@ ${referenceLines.join("\n")}`;
         </div>
 
         <div className="outputPanel">
-          <h3>Implementation readiness</h3>
-          <div className="ratingBanner">
-            <span>Implementation Readiness Score</span>
-            <strong>{implementationReadinessScore}/100</strong>
-            <small>{readinessStatus}</small>
-          </div>
-          <div className="readinessBreakdown">
-            <div><strong>{state.selectedEvidence.length}</strong><span>Evidence used</span><small>{state.selectedEvidence.length >= 2 ? "Meets requirement" : "Needs at least 2"}</small></div>
-            <div><strong>{state.selectedConstraints.length}</strong><span>Constraints addressed</span><small>{state.selectedConstraints.length >= 1 ? "Meets requirement" : "Needs at least 1"}</small></div>
-            <div><strong>{state.eventHistory.some((event) => event.selectedChoice) ? "Yes" : "No"}</strong><span>Event response completed</span><small>{state.eventHistory.some((event) => event.selectedChoice) ? "Meets requirement" : "Draw and respond to an event"}</small></div>
-            <div><strong>{approvalPercentage}%</strong><span>Stakeholder approval</span><small>{approvalPercentage >= 60 ? "Meets requirement" : "Needs 60%+"}</small></div>
-            <div><strong>{readiness.completedSections}/6</strong><span>Final output completeness</span><small>{readiness.completionStatus}</small></div>
-            <div><strong>{state.scores.feasibility}/5</strong><span>Feasibility score</span><small>{state.scores.feasibility >= 3 ? "Meets requirement" : "Needs 3+"}</small></div>
-            <div><strong>{state.scores.equity}/5</strong><span>Equity score</span><small>{state.scores.equity >= 3 ? "Meets requirement" : "Needs 3+"}</small></div>
-          </div>
-          <div className="readinessFeedback">
-            <h3>Why did we get this score?</h3>
-            <div className="feedbackGrid">
-              {readiness.checks.map((check) => (
-                <div className={check.met ? "feedbackItem met" : "feedbackItem warn"} key={check.label}>
-                  <strong>{check.met ? "✓" : "⚠"} {check.label}</strong>
-                  <span>{check.met ? "Requirement met" : check.warning}</span>
+          <h3>Policy assessment</h3>
+          {assessment.ready && assessment.scores ? (
+            <>
+              <div className="rubricStrip scoreReport">
+                {Object.entries(assessment.scores).map(([category, score]) => (
+                  <div key={category}>
+                    <strong>{category}</strong>
+                    <span>{score}/5</span>
+                  </div>
+                ))}
+                <div>
+                  <strong>Overall Policy Score</strong>
+                  <span>{assessment.overall}/25</span>
                 </div>
-              ))}
-            </div>
-            <p className="ruleText">Completed sections: <strong>{readiness.completedSections}/6</strong> · {readiness.completionStatus}</p>
-            {readiness.stakeholderWarning ? <p className="warningText">{readiness.stakeholderWarning}</p> : null}
-          </div>
-        </div>
-
-        <div className="outputPanel">
-          <h3>Facilitator assessment rubric</h3>
-          <div className="readinessBreakdown">
-            <div><strong>{readiness.rubric.evidenceUse}/5</strong><span>Evidence Use</span></div>
-            <div><strong>{readiness.rubric.feasibility}/5</strong><span>Feasibility</span></div>
-            <div><strong>{readiness.rubric.equity}/5</strong><span>Equity</span></div>
-            <div><strong>{readiness.rubric.stakeholderEngagement}/5</strong><span>Stakeholder Engagement</span></div>
-            <div><strong>{readiness.rubric.testingPlan}/5</strong><span>Testing Plan</span></div>
-          </div>
-          <div className="reportHistory">
-            {readiness.rubric.comments.map((comment) => (
-              <div key={comment}>
-                <span>{comment}</span>
               </div>
-            ))}
-          </div>
+              <div className="readinessFeedback">
+                <h3>Why did we get this score?</h3>
+                <div className="reportHistory">
+                  {assessment.trace.map((item) => (
+                    <div key={item.label}>
+                      <strong>{item.label}</strong>
+                      <span>{item.evidence}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="readinessBreakdown">
+                <div><strong>Strengths</strong><span>{assessment.strengths.join("; ")}</span></div>
+                <div><strong>Areas for Improvement</strong><span>{assessment.improvements.join("; ")}</span></div>
+              </div>
+            </>
+          ) : (
+            <div className="assessmentPending">
+              <strong>Not yet assessed</strong>
+              <span>Awaiting team decisions</span>
+              <p>{assessment.message}</p>
+              <div className="miniList">
+                {assessment.missing.map((item) => <span key={item}>{item}</span>)}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="outputPanel">
@@ -609,19 +612,6 @@ ${referenceLines.join("\n")}`;
                 <span>{reference.title} ({reference.year})</span>
               </div>
             ))}
-          </div>
-        </div>
-
-        <div className="rubricStrip scoreReport">
-          {Object.entries(state.scores).map(([category, score]) => (
-            <div key={category}>
-              <strong>{category}</strong>
-              <span>{score}/5</span>
-            </div>
-          ))}
-          <div>
-            <strong>Total</strong>
-            <span>{totalScore}/25</span>
           </div>
         </div>
 

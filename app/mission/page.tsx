@@ -60,7 +60,7 @@ export default async function MissionPage({
           <div className="miniList">
             <span>Service improvement proposal</span>
             <span>Evidence-based policy brief</span>
-            <span>Implementation readiness assessment</span>
+            <span>Traceable policy assessment</span>
             <span>3-minute cabinet pitch</span>
           </div>
         </div>

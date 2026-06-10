@@ -17,7 +17,7 @@ import {
   wisdomCards
 } from "../data";
 import { defaultTimer, emptyAssistantOutputs, emptyOutputs, type WorkspaceState } from "../types";
-import { calculateApprovalPercentage, calculatePolicyImpactScore, calculateReadiness } from "../readiness";
+import { calculateApprovalPercentage, calculateSimulationAssessment } from "../readiness";
 
 const storageKey = "policyquest-workspace";
 const challengeUpdates = [
@@ -32,21 +32,18 @@ const difficultySettings = {
     label: "Easy",
     tokenPool: 10,
     selectionLimit: 4,
-    startingScore: 4,
     severity: 0.5
   },
   standard: {
     label: "Standard",
     tokenPool: 8,
     selectionLimit: 3,
-    startingScore: 3,
     severity: 1
   },
   advanced: {
     label: "Advanced",
     tokenPool: 6,
     selectionLimit: 2,
-    startingScore: 2,
     severity: 1.5
   }
 } as const;
@@ -60,8 +57,6 @@ function getContext(contextId: string) {
 }
 
 function createInitialState(issueId: string, contextId: ContextId): WorkspaceState {
-  const startingScore = difficultySettings.standard.startingScore;
-
   return {
     issueId,
     contextId,
@@ -80,17 +75,16 @@ function createInitialState(issueId: string, contextId: ContextId): WorkspaceSta
     eventQualityTotal: 0,
     facilitatorActions: 0,
     approvalPercentage: 0,
-    implementationReadinessScore: 0,
     team: {
       name: "",
       members: ""
     },
     scores: {
-      inclusion: startingScore,
-      feasibility: startingScore,
-      impact: startingScore,
-      equity: startingScore,
-      innovation: startingScore
+      inclusion: 0,
+      feasibility: 0,
+      impact: 0,
+      equity: 0,
+      innovation: 0
     },
     timer: defaultTimer,
     outputs: emptyOutputs,
@@ -120,7 +114,6 @@ function normalizeState(saved: Partial<WorkspaceState>, issueId: string, context
     eventQualityTotal: saved.eventQualityTotal ?? base.eventQualityTotal,
     facilitatorActions: saved.facilitatorActions ?? base.facilitatorActions,
     approvalPercentage: saved.approvalPercentage ?? base.approvalPercentage,
-    implementationReadinessScore: saved.implementationReadinessScore ?? base.implementationReadinessScore,
     team: {
       ...base.team,
       ...saved.team
@@ -151,8 +144,7 @@ function formatTime(totalSeconds: number) {
 }
 
 function saveSessionState(state: WorkspaceState) {
-  const policyImpactScore = calculatePolicyImpactScore(state);
-  const readiness = calculateReadiness(state);
+  const assessment = calculateSimulationAssessment(state);
 
   window.localStorage.setItem(storageKey, JSON.stringify(state));
   window.localStorage.setItem("policyquest-selectedEvidence", JSON.stringify(state.selectedEvidence));
@@ -163,8 +155,13 @@ function saveSessionState(state: WorkspaceState) {
   window.localStorage.setItem("policyquest-stakeholderVotes", JSON.stringify(state.stakeholderVotes));
   window.localStorage.setItem("policyquest-scoreDashboard", JSON.stringify(state.scores));
   window.localStorage.setItem("policyquest-difficulty", JSON.stringify(state.difficulty));
-  window.localStorage.setItem("policyquest-policyImpactScore", JSON.stringify(policyImpactScore));
-  window.localStorage.setItem("policyquest-implementationReadiness", JSON.stringify(readiness.score));
+  if (assessment.ready) {
+    window.localStorage.setItem("policyquest-policyAssessment", JSON.stringify(assessment));
+  } else {
+    window.localStorage.removeItem("policyquest-policyAssessment");
+    window.localStorage.removeItem("policyquest-policyImpactScore");
+    window.localStorage.removeItem("policyquest-implementationReadiness");
+  }
 }
 
 export default function WorkspaceClient({ issueId, contextId }: { issueId: string; contextId: string }) {
@@ -236,29 +233,24 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
   const resourceLimit = difficulty.selectionLimit + state.bonusResources;
   const totalTokenPool = difficulty.tokenPool + state.bonusResources + Math.max(0, resourceEffectTotal);
   const remainingTokens = Math.max(0, totalTokenPool - state.selectedTokens.length);
-  const totalScore = Object.values(state.scores).reduce((sum, score) => sum + score, 0);
   const voteValues = Object.values(state.stakeholderVotes);
   const supportCount = voteValues.filter((vote) => vote === "support").length;
   const changesCount = voteValues.filter((vote) => vote === "changes").length;
   const opposeCount = voteValues.filter((vote) => vote === "oppose").length;
   const castVotes = supportCount + changesCount + opposeCount;
   const approvalPercentage = calculateApprovalPercentage(state);
-  const policyImpactScore = calculatePolicyImpactScore(state);
-  const readiness = calculateReadiness(state);
-  const implementationReadinessScore = readiness.score;
-  const readinessStatus = readiness.category;
+  const assessment = calculateSimulationAssessment(state);
 
   useEffect(() => {
-    if (state.approvalPercentage === approvalPercentage && state.implementationReadinessScore === implementationReadinessScore) {
+    if (state.approvalPercentage === approvalPercentage) {
       return;
     }
 
     setState((current) => ({
       ...current,
-      approvalPercentage,
-      implementationReadinessScore
+      approvalPercentage
     }));
-  }, [approvalPercentage, implementationReadinessScore, state.approvalPercentage, state.implementationReadinessScore]);
+  }, [approvalPercentage, state.approvalPercentage]);
 
   function effectSummary(choice: EventChoice) {
     const scoreText = Object.entries(choice.scoreEffects)
@@ -421,16 +413,6 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
     }));
   }
 
-  function updateScore(field: keyof WorkspaceState["scores"], value: number) {
-    setState((current) => ({
-      ...current,
-      scores: {
-        ...current.scores,
-        [field]: value
-      }
-    }));
-  }
-
   function setTimerMode(mode: 60 | 90 | 120) {
     setState((current) => ({
       ...current,
@@ -449,11 +431,11 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
       difficulty: nextDifficulty,
       selectedTokens: current.selectedTokens.slice(0, setting.selectionLimit + current.bonusResources),
       scores: {
-        inclusion: setting.startingScore,
-        feasibility: setting.startingScore,
-        impact: setting.startingScore,
-        equity: setting.startingScore,
-        innovation: setting.startingScore
+        inclusion: 0,
+        feasibility: 0,
+        impact: 0,
+        equity: 0,
+        innovation: 0
       },
       scoreEffects: {},
       resourceEffects: {},
@@ -623,7 +605,7 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
               ))}
             </div>
             <p className="mutedText">
-              {difficulty.tokenPool} resource tokens, {difficulty.selectionLimit} selectable resources, starting score {difficulty.startingScore}.
+              {difficulty.tokenPool} resource tokens and {difficulty.selectionLimit} selectable resources.
             </p>
           </div>
 
@@ -893,52 +875,49 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
 
           <section className="contentBlock">
             <div className="sectionHead compact">
-              <p className="eyebrow">Score dashboard</p>
-              <h2>Rate the strength of the service improvement.</h2>
-              <p className="ruleText">Score each category from 1 to 5. Total score: <strong>{totalScore}/25</strong></p>
+              <p className="eyebrow">Assessment dashboard</p>
+              <h2>Policy assessment status.</h2>
+              <p className="ruleText">
+                Scores are generated only after evidence, resources, event responses, stakeholder voting, and final outputs are recorded.
+              </p>
             </div>
-            <div className="scoreDashboard">
-              {Object.entries(state.scores).map(([key, score]) => (
-                <label className="scoreControl" key={key}>
-                  <span>{key}</span>
-                  <input
-                    max="5"
-                    min="1"
-                    type="range"
-                    value={score}
-                    onChange={(event) => updateScore(key as keyof WorkspaceState["scores"], Number(event.target.value))}
-                  />
-                  <strong>{score}</strong>
-                </label>
-              ))}
-              <div className="totalScore">
-                <span>Total</span>
-                <strong>{totalScore}</strong>
-              </div>
-              <div className="impactScore">
-                <span>Policy Impact Score</span>
-                <strong>{policyImpactScore}</strong>
-                <small>Live score from sliders, resources, event choices, and facilitator actions.</small>
-              </div>
-              <div className="readinessScore">
-                <span>Implementation Readiness</span>
-                <strong>{implementationReadinessScore}</strong>
-                <small>{readinessStatus}</small>
-              </div>
-            </div>
-            <div className="readinessFeedback">
-              <h3>Why did we get this score?</h3>
-              <div className="feedbackGrid">
-                {readiness.checks.map((check) => (
-                  <div className={check.met ? "feedbackItem met" : "feedbackItem warn"} key={check.label}>
-                    <strong>{check.met ? "✓" : "⚠"} {check.label}</strong>
-                    <span>{check.met ? "Requirement met" : check.warning}</span>
+            {assessment.ready && assessment.scores ? (
+              <>
+                <div className="scoreDashboard">
+                  {Object.entries(assessment.scores).map(([key, score]) => (
+                    <div className="scoreControl staticScore" key={key}>
+                      <span>{key}</span>
+                      <strong>{score}/5</strong>
+                    </div>
+                  ))}
+                  <div className="totalScore">
+                    <span>Overall Policy Score</span>
+                    <strong>{assessment.overall}/25</strong>
                   </div>
-                ))}
+                </div>
+                <div className="readinessFeedback">
+                  <h3>Why did we get this score?</h3>
+                  <div className="feedbackGrid">
+                    {assessment.trace.map((item) => (
+                      <div className="feedbackItem met" key={item.label}>
+                        <strong>{item.label}</strong>
+                        <span>{item.evidence}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="assessmentPending">
+                <strong>Not yet assessed</strong>
+                <span>Awaiting team decisions</span>
+                <p>Complete the simulation to generate results.</p>
+                <small>{assessment.message}</small>
+                <div className="miniList">
+                  {assessment.missing.map((item) => <span key={item}>{item}</span>)}
+                </div>
               </div>
-              <p className="ruleText">Completed sections: <strong>{readiness.completedSections}/6</strong> · {readiness.completionStatus}</p>
-              {readiness.stakeholderWarning ? <p className="warningText">{readiness.stakeholderWarning}</p> : null}
-            </div>
+            )}
           </section>
 
           <section className="contentBlock">

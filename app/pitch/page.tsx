@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { contextPacks, getIssuePack, policyIssues, resourceTokens } from "../data";
-import { calculateReadiness } from "../readiness";
+import { calculateSimulationAssessment } from "../readiness";
 import { defaultScores, defaultTimer, emptyAssistantOutputs, emptyOutputs, type WorkspaceState } from "../types";
 
 const storageKey = "policyquest-workspace";
@@ -17,11 +17,11 @@ type ReviewScores = {
 };
 
 const defaultReviewScores: ReviewScores = {
-  evidenceUse: 3,
-  feasibility: 3,
-  equity: 3,
-  innovation: 3,
-  stakeholderResponsiveness: 3
+  evidenceUse: 0,
+  feasibility: 0,
+  equity: 0,
+  innovation: 0,
+  stakeholderResponsiveness: 0
 };
 
 function createInitialState(): WorkspaceState {
@@ -43,7 +43,6 @@ function createInitialState(): WorkspaceState {
     eventQualityTotal: 0,
     facilitatorActions: 0,
     approvalPercentage: 0,
-    implementationReadinessScore: 0,
     team: { name: "", members: "" },
     scores: defaultScores,
     timer: defaultTimer,
@@ -69,6 +68,16 @@ function response(value: string) {
   return value.trim() || "No response recorded";
 }
 
+function normalizeReviewScores(saved: ReviewScores): ReviewScores {
+  const scores = Object.values(saved);
+
+  if (scores.length === 5 && scores.every((score) => score === 3)) {
+    return defaultReviewScores;
+  }
+
+  return saved;
+}
+
 export default function PitchPage() {
   const [state, setState] = useState<WorkspaceState>(createInitialState());
   const [reviewScores, setReviewScores] = useState<ReviewScores>(defaultReviewScores);
@@ -80,7 +89,7 @@ export default function PitchPage() {
     }
     const savedReview = window.localStorage.getItem("policyquest-cabinet-review");
     if (savedReview) {
-      setReviewScores(JSON.parse(savedReview) as ReviewScores);
+      setReviewScores(normalizeReviewScores(JSON.parse(savedReview) as ReviewScores));
     }
   }, []);
 
@@ -94,9 +103,10 @@ export default function PitchPage() {
   const evidencePack = issuePack.evidence;
   const selectedEvidence = evidencePack.filter((evidence) => state.selectedEvidence.includes(evidence.id));
   const selectedResources = resourceTokens.filter((token) => state.selectedTokens.includes(token.id));
-  const readiness = calculateReadiness(state);
+  const assessment = calculateSimulationAssessment(state);
+  const reviewComplete = Object.values(reviewScores).every((score) => score > 0);
   const reviewTotal = Object.values(reviewScores).reduce((sum, score) => sum + score, 0);
-  const recommendation = reviewTotal >= 21 ? "Approve Pilot" : reviewTotal >= 14 ? "Revise" : "Reject";
+  const recommendation = reviewComplete ? (reviewTotal >= 21 ? "Approve Pilot" : reviewTotal >= 14 ? "Revise" : "Reject") : "Awaiting review";
 
   function updateReviewScore(field: keyof ReviewScores, value: number) {
     setReviewScores((current) => ({ ...current, [field]: value }));
@@ -136,7 +146,7 @@ export default function PitchPage() {
           <article><span>5</span><h3>Equity Considerations</h3><p>{response(state.outputs.equity)}</p></article>
           <article><span>6</span><h3>Pilot Design</h3><p>{response(state.outputs.test)}</p></article>
           <article><span>7</span><h3>Resources Required</h3><p>{selectedResources.length ? selectedResources.map((token) => token.name).join(", ") : "No response recorded"}</p></article>
-          <article><span>8</span><h3>Recommendation</h3><p>Proceed with a pilot only if readiness remains at {readiness.category} or higher after facilitator review.</p></article>
+          <article><span>8</span><h3>Recommendation</h3><p>{assessment.ready ? "Proceed with cabinet review using the traceable policy assessment and reviewer judgement." : "Complete evidence use, event response, resource allocation, stakeholder voting, and final outputs before treating this proposal as decision-ready."}</p></article>
         </div>
 
         <div className="outputPanel">
@@ -145,8 +155,19 @@ export default function PitchPage() {
             {Object.entries(reviewScores).map(([key, score]) => (
               <label className="scoreControl" key={key}>
                 <span>{reviewLabels[key as keyof ReviewScores]}</span>
-                <input min="1" max="5" type="range" value={score} onChange={(event) => updateReviewScore(key as keyof ReviewScores, Number(event.target.value))} />
-                <strong>{score}</strong>
+                <div className="reviewButtonRow">
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <button
+                      className={score === value ? "reviewScore active" : "reviewScore"}
+                      key={value}
+                      onClick={() => updateReviewScore(key as keyof ReviewScores, value)}
+                      type="button"
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+                <strong>{score > 0 ? score : "Not scored"}</strong>
               </label>
             ))}
             <div className="totalScore"><span>Cabinet Recommendation</span><strong>{recommendation}</strong></div>

@@ -32,7 +32,6 @@ export type WorkspaceState = {
   eventQualityTotal: number;
   facilitatorActions: number;
   approvalPercentage: number;
-  implementationReadinessScore: number;
   team: {
     name: string;
     members: string;
@@ -67,11 +66,11 @@ export type WorkspaceState = {
 };
 
 export const defaultScores: WorkspaceState["scores"] = {
-  inclusion: 3,
-  feasibility: 3,
-  impact: 3,
-  equity: 3,
-  innovation: 3
+  inclusion: 0,
+  feasibility: 0,
+  impact: 0,
+  equity: 0,
+  innovation: 0
 };
 
 export const defaultTimer: WorkspaceState["timer"] = {

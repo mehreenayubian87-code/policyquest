@@ -114,6 +114,7 @@ export type ContextPack = {
   id: ContextId;
   name: string;
   description: string;
+  themes: string[];
   issuePacks?: Record<string, IssueContentPack>;
   evidencePacks: Record<string, EvidenceCard[]>;
   eventDecks: Record<string, ConsequenceEvent[]>;
@@ -736,6 +737,7 @@ export const contextPacks: Record<ContextId, ContextPack> = {
     id: "qatar",
     name: "Qatar",
     description: "A high-income, multilingual health and public service context with strong national strategy, rapid service development, and governance requirements.",
+    themes: ["Multilingual access", "National strategy", "Service coordination"],
     stakeholders: [
       { title: "Service User", text: "You need support that is easy to understand, culturally respectful, and clear about next steps.", prompt: "Ask: Would I know where to go and what will happen next?" },
       { title: "Community Representative", text: "You understand how language, trust, and community settings affect engagement.", prompt: "Ask: Does this reach people beyond official channels?" },
@@ -757,6 +759,7 @@ export const contextPacks: Record<ContextId, ContextPack> = {
     id: "uk",
     name: "United Kingdom",
     description: "A publicly funded health, education, and local government context shaped by NHS access pressures, local partnerships, regulation, and commissioning.",
+    themes: ["Access pressures", "Local partnerships", "Commissioning"],
     stakeholders: [
       { title: "Service User", text: "You may experience long waits, unclear pathways, or repeated referrals.", prompt: "Ask: Does this make the route easier?" },
       { title: "NHS Clinician", text: "You focus on safe care, workload, clinical standards, and continuity.", prompt: "Ask: Can staff deliver this alongside current demand?" },
@@ -778,6 +781,7 @@ export const contextPacks: Record<ContextId, ContextPack> = {
     id: "pakistan",
     name: "Pakistan",
     description: "A federal and provincial health and public service context shaped by rural access barriers, workforce gaps, affordability, and community trust.",
+    themes: ["Rural access", "Community trust", "Workforce capacity"],
     stakeholders: [
       { title: "Service User", text: "You may face distance, cost, stigma, or uncertainty about where to seek help.", prompt: "Ask: Is this reachable and understandable?" },
       { title: "Lady Health Worker", text: "You connect households with health information and community-based support.", prompt: "Ask: Does this use community outreach realistically?" },

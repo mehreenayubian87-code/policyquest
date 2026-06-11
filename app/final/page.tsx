@@ -132,7 +132,6 @@ export default function FinalPage() {
     if (saved) {
       try {
         const parsed = normalizeState(JSON.parse(saved) as Partial<WorkspaceState>);
-        console.log("PolicyQuest final page loaded session:", parsed);
         setState(parsed);
       } catch {
         window.localStorage.removeItem(storageKey);

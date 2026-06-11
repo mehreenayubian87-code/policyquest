@@ -517,15 +517,6 @@ export const eventDecks: Record<string, ConsequenceEvent[]> = {
   "climate-adaptation": buildDeck("cli", "climate adaptation")
 };
 
-const evidenceTypes: EvidenceCard["type"][] = [
-  "Policy Report",
-  "Service Data",
-  "Research Finding",
-  "User Voice",
-  "Audit Finding",
-  "Evaluation Finding"
-];
-
 const evidenceFindings = [
   ["Policy Report", "Strategy documents emphasise earlier, more coordinated support.", "Design earlier, clearer routes into help."],
   ["Service Data", "Service use patterns can reveal groups who are not reached by standard access routes.", "Design access routes for people not already using services."],
@@ -720,7 +711,7 @@ function buildContextEvidencePacks(context: ContextId) {
 function buildContextEvents(contextName: string, issueId: string): ConsequenceEvent[] {
   const focus = issueFocus[issueId];
 
-  return eventTemplates.map(([title, description, consequence, choices], index) => ({
+  return eventTemplates.map(([title, description, consequence, choices]) => ({
     title,
     description: `${description} In ${contextName}, this affects ${focus} through local implementation conditions.`,
     consequence: `${consequence} Teams should respond using context evidence and clearly stated assumptions.`,

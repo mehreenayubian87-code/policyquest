@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { PolicyIcon } from "../components";
 import { contextPacks, getIssuePack, policyIssues, type ContextId } from "../data";
@@ -91,7 +92,12 @@ export default function RolesClient({
                 <strong>Role Assigned</strong>
                 <small>Scan assigned QR code</small>
               </div>
-              <img src={qrUrl(assignment.privateUrl)} alt={`${assignment.participant} confidential role QR code`} />
+              <Image
+                src={qrUrl(assignment.privateUrl)}
+                alt={`${assignment.participant} confidential role QR code`}
+                width={150}
+                height={150}
+              />
             </article>
           ))}
         </div>

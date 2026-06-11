@@ -18,6 +18,7 @@
 }
 
 html {
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -27,6 +28,7 @@ body {
   color: var(--ink);
   font-family: Arial, Helvetica, sans-serif;
   line-height: 1.45;
+  overflow-x: hidden;
 }
 
 a {
@@ -70,6 +72,7 @@ h3 {
 
 main {
   min-height: 100vh;
+  min-width: 0;
 }
 
 .hero {
@@ -163,6 +166,7 @@ main {
 .heroCopy {
   animation: heroTextFade 620ms ease-out both;
   max-width: 860px;
+  min-width: 0;
 }
 
 @keyframes heroTextFade {
@@ -821,6 +825,10 @@ nextjs-portal {
   border-bottom: 1px solid var(--line);
 }
 
+.workspaceHeader > div {
+  min-width: 0;
+}
+
 .workspaceHeader h1 {
   font-size: clamp(2rem, 4vw, 4rem);
 }
@@ -873,6 +881,7 @@ nextjs-portal {
   background: white;
   border: 1px solid var(--line);
   border-radius: 8px;
+  min-width: 0;
   padding: 18px;
 }
 
@@ -2125,15 +2134,107 @@ textarea:focus {
 
 @media (max-width: 680px) {
   .hero {
-    min-height: auto;
+    min-height: 100svh;
     padding-bottom: 36px;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  .button,
+  .filter,
+  .heroBadge,
+  .heroBadge strong,
+  .heroBadge span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  h1 {
+    font-size: clamp(1.85rem, 8.5vw, 2.15rem);
+    line-height: 1.08;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 9vw, 2.25rem);
+    line-height: 1.08;
+    max-width: 9.8em;
+  }
+
+  .heroSubtitle,
+  .lead,
+  .ctaSupport,
+  .workspaceHeader p:last-child {
+    max-width: 100%;
+  }
+
+  .ctaSupport {
+    font-size: 0.86rem;
+    max-width: 30ch;
+  }
+
+  .heroGrid,
+  .heroCopy,
+  .workspaceHeader,
+  .workspaceLayout,
+  .sideRail,
+  .workspaceMain,
+  .contentBlock,
+  .railBlock {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .heroGrid,
+  .heroCopy,
+  .workspaceHeader,
+  .workspaceLayout {
+    width: auto;
+  }
+
+  .heroBadge {
+    border-radius: 8px;
+    flex-wrap: wrap;
+    width: auto;
+  }
+
+  .heroActions,
+  .buttonRow,
+  .timerModes {
+    width: 100%;
+  }
+
+  .timerModes .filter {
+    min-width: 0;
+  }
+
+  .timerModes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .buttonRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .nav,
   .workspaceHeader,
   .finalHeader {
     align-items: flex-start;
+    display: flex;
     flex-direction: column;
+  }
+
+  .finalHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .finalHeader .button,
+  .finalActions {
+    width: 100%;
   }
 
   .stageGrid,

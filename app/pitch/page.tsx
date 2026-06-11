@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { contextPacks, getIssuePack, policyIssues, resourceTokens } from "../data";
 import { calculateSimulationAssessment } from "../readiness";
 import { defaultScores, defaultTimer, emptyAssistantOutputs, emptyOutputs, type WorkspaceState } from "../types";

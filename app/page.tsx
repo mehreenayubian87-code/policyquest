@@ -1,11 +1,18 @@
 ﻿import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
     <main>
       <section className="hero">
         <div className="heroMedia" aria-hidden="true">
-          <img src="/images/policyquest-hero.jpg" alt="" />
+          <Image
+            src="/images/policyquest-hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+          />
         </div>
         <nav className="nav">
           <div className="brand">PolicyQuest</div>

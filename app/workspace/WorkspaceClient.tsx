@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   activityCards,
   categories,
@@ -220,14 +220,10 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
     return () => window.clearInterval(timer);
   }, [state.paused, state.timer.remainingSeconds, state.timer.running]);
 
-  const categoryName = useMemo(
-    () => categories.find((category) => category.id === issue.category)?.name ?? "Policy",
-    [issue.category]
-  );
+  const categoryName = categories.find((category) => category.id === issue.category)?.name ?? "Policy";
   const deck = issuePack.events;
   const evidencePack = issuePack.evidence;
   const difficulty = difficultySettings[state.difficulty];
-  const selectedResourceBonus = state.selectedTokens.length;
   const resourceEffectTotal = Object.values(state.resourceEffects).reduce((sum, effect) => sum + effect, 0);
 
   const resourceLimit = difficulty.selectionLimit + state.bonusResources;
@@ -516,7 +512,6 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
 
   function persistAndDebugBeforeFinal() {
     saveSessionState(state);
-    console.log("PolicyQuest saved session before final output:", state);
   }
 
   return (

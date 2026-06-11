@@ -1953,6 +1953,176 @@ textarea:focus {
   }
 }
 
+@media (max-width: 768px) {
+  body {
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+
+  main,
+  .pageHeader,
+  .workspaceHeader,
+  .workspaceLayout,
+  .outputSheet,
+  .missionSheet,
+  .privateRoleSheet,
+  .contentBlock,
+  .sideRail,
+  .outputPanel,
+  .printRoleCard,
+  .assignmentCard,
+  .privateRoleGrid article,
+  .pitchGrid article,
+  .outputGrid article {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .pageHeader,
+  .workspaceHeader {
+    padding: 16px;
+  }
+
+  .pageHeader > *,
+  .workspaceHeader > *,
+  .outputTitle,
+  .assignmentCard > *,
+  .roleTitle > *,
+  .assistantHeader > * {
+    min-width: 0;
+  }
+
+  .pageHeader > div,
+  .workspaceHeader > div {
+    max-width: calc(100vw - 32px);
+    width: 100%;
+  }
+
+  .pageHeader *,
+  .workspaceHeader *,
+  .outputSheet * {
+    max-width: 100%;
+  }
+
+  .pageHeader h1,
+  .workspaceHeader h1 {
+    font-size: clamp(1.9rem, 9vw, 2.55rem);
+    line-height: 1.05;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .pageHeader p,
+  .workspaceHeader p,
+  .outputTitle p,
+  .outputPanel p,
+  .privateRoleGrid p,
+  .pitchGrid p,
+  .roleSection p {
+    line-height: 1.55;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .finalHeader {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .finalActions,
+  .buttonRow {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .button,
+  .backLink {
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .printButton {
+    justify-self: stretch;
+    margin-top: 4px;
+    max-width: calc(100vw - 32px);
+    width: 100%;
+  }
+
+  .workspaceLayout {
+    gap: 16px;
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .sideRail {
+    position: static;
+  }
+
+  .outputSheet {
+    border-left: 0;
+    border-right: 0;
+    margin: 16px 0 48px;
+    padding: 16px;
+  }
+
+  .missionSheet {
+    gap: 16px;
+  }
+
+  .assignmentGrid,
+  .roleRevealGrid,
+  .roleCardGrid,
+  .privateRoleGrid,
+  .pitchGrid,
+  .outputGrid,
+  .assistantOutputGrid,
+  .teamSummary,
+  .voteSummary,
+  .readinessBreakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .assignmentGrid,
+  .privateRoleGrid,
+  .pitchGrid,
+  .outputGrid {
+    gap: 14px;
+  }
+
+  .assignmentCard {
+    justify-items: center;
+    padding: 16px;
+  }
+
+  .assignmentCard img {
+    height: min(180px, 52vw);
+    width: min(180px, 52vw);
+  }
+
+  .roleCardGrid {
+    padding: 16px;
+  }
+
+  .roleTitle {
+    align-items: flex-start;
+  }
+
+  .facilitatorReveal {
+    gap: 10px;
+  }
+
+  .scoreDashboard,
+  .rubricStrip {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 680px) {
   .hero {
     min-height: auto;

@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -9,9 +9,6 @@ export default function HomePage() {
         </div>
         <nav className="nav">
           <div className="brand">PolicyQuest</div>
-          <Link className="navLink" href="/context">
-            Start a Session
-          </Link>
         </nav>
         <div className="heroGrid">
           <div className="heroCopy">
@@ -24,7 +21,7 @@ export default function HomePage() {
               Evidence. Negotiation. Action.
             </p>
             <p className="lead">
-              🎯 From challenge to policy solution.
+              🎯 Turn evidence into policy solutions.
             </p>
             <div className="heroActions">
               <Link className="button primary" href="/context">

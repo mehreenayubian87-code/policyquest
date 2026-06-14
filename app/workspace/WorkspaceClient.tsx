@@ -736,14 +736,23 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
                   <p className="mutedText">No events drawn yet.</p>
                 )}
               </div>
-              <div className="wisdomStack">
-                {wisdomCards.map((card) => (
-                  <article className="wisdomItem" key={card.title}>
-                    <strong>{card.title}</strong>
-                    <p>{card.text}</p>
-                  </article>
-                ))}
-              </div>
+              <section className="wisdomSection">
+                <div className="sectionHead compact">
+                  <p className="eyebrow">Guidance cards</p>
+                  <h2>Co-Design Principles</h2>
+                  <p className="ruleText">
+                    Use these reminders throughout the activity to challenge assumptions and improve your decisions.
+                  </p>
+                </div>
+                <div className="wisdomStack">
+                  {wisdomCards.map((card) => (
+                    <article className="wisdomItem" key={card.title}>
+                      <strong>{card.title}</strong>
+                      <p>{card.text}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
             </div>
           </section>
 
@@ -923,30 +932,37 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
             <div className="notesGrid">
               <label>
                 Access problem
+                <span className="fieldPrompt">(What specific problem are people experiencing? Who is affected and why?)</span>
                 <textarea value={state.outputs.problem} onChange={(event) => updateOutput("problem", event.target.value)} />
               </label>
               <label>
                 Key insight
+                <span className="fieldPrompt">(What important lesson emerged from the evidence, stakeholder discussion, or lived experience?)</span>
                 <textarea value={state.outputs.insight} onChange={(event) => updateOutput("insight", event.target.value)} />
               </label>
               <label>
                 Service improvement idea
+                <span className="fieldPrompt">(Describe your proposed policy, service, or intervention in 1–2 sentences.)</span>
                 <textarea value={state.outputs.idea} onChange={(event) => updateOutput("idea", event.target.value)} />
               </label>
               <label>
                 Prototype or journey
+                <span className="fieldPrompt">(How will the solution work in practice? Describe the main steps from problem to support.)</span>
                 <textarea value={state.outputs.prototype} onChange={(event) => updateOutput("prototype", event.target.value)} />
               </label>
               <label>
                 Equity adjustment
+                <span className="fieldPrompt">(Who might still be left out? What change makes the solution more fair and inclusive?)</span>
                 <textarea value={state.outputs.equity} onChange={(event) => updateOutput("equity", event.target.value)} />
               </label>
               <label>
                 First test
+                <span className="fieldPrompt">(What small pilot or test would you run before scaling the solution?)</span>
                 <textarea value={state.outputs.test} onChange={(event) => updateOutput("test", event.target.value)} />
               </label>
               <label className="wide">
                 Success measures
+                <span className="fieldPrompt">(How will you know the solution is working? List 2–3 indicators or outcomes.)</span>
                 <textarea value={state.outputs.measures} onChange={(event) => updateOutput("measures", event.target.value)} />
               </label>
             </div>

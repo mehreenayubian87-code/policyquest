@@ -1131,6 +1131,10 @@ nextjs-portal {
   margin-top: 14px;
 }
 
+.wisdomSection {
+  margin-top: 18px;
+}
+
 .wisdomItem {
   background: #f7fafc;
   border: 1px solid var(--line);
@@ -1481,6 +1485,13 @@ nextjs-portal {
   display: grid;
   gap: 8px;
   font-weight: 800;
+}
+
+.fieldPrompt {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .notesGrid label.wide {

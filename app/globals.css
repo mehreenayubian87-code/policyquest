@@ -1945,6 +1945,273 @@ textarea:focus {
   color: var(--muted);
 }
 
+.workspaceLayoutV2 {
+  align-items: start;
+  grid-template-columns: minmax(250px, 0.78fr) minmax(520px, 1.72fr) minmax(300px, 0.95fr);
+  gap: 18px;
+}
+
+.referencePanel,
+.decisionPanel {
+  align-self: start;
+  display: grid;
+  gap: 16px;
+  position: sticky;
+  top: 16px;
+}
+
+.mainWorkPanel {
+  min-width: 0;
+}
+
+.workspaceLayoutV2 .railBlock,
+.workspaceLayoutV2 .contentBlock {
+  box-shadow: 0 10px 28px rgba(23, 33, 43, 0.05);
+}
+
+.workspaceLayoutV2 .contentBlock {
+  border-color: #ccd6e0;
+}
+
+.stageWorkBlock {
+  border-top: 5px solid var(--blue);
+}
+
+.processBandV2 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.activityGridV2 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.activityCardV2 {
+  gap: 16px;
+  min-height: 250px;
+}
+
+.activityCardV2 h3 {
+  font-size: 1.12rem;
+}
+
+.activityCardV2 div {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.activityCardV2 span {
+  color: var(--teal);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.activityCardV2 strong {
+  margin-top: 0;
+}
+
+.stakeholderFocusList {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.stakeholderFocusList article {
+  background: #fbfcfd;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.stakeholderFocusList span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.guidanceCard {
+  border-left: 4px solid var(--teal);
+}
+
+.decisionPanel .railBlock {
+  overflow: hidden;
+}
+
+.decisionStack {
+  grid-template-columns: 1fr;
+  max-height: 520px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.completionList {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.completionList div {
+  align-items: center;
+  background: #fbfcfd;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.completionList div.complete {
+  background: #ecfdf8;
+  border-color: #b9ddd6;
+}
+
+.completionList div.partial {
+  background: #fff8e8;
+  border-color: #edd6a7;
+}
+
+.completionList strong {
+  font-size: 0.9rem;
+}
+
+.eventSupportBlock {
+  border-top: 5px solid var(--orange);
+}
+
+.eventSupportBlock h2 {
+  font-size: 1.55rem;
+}
+
+.eventCategory {
+  background: #fff8e8;
+  border: 1px solid #edd6a7;
+  border-radius: 999px;
+  color: var(--orange);
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  margin: 8px 0 12px;
+  padding: 6px 9px;
+}
+
+.eventSupportBlock > p,
+.eventSupportBlock > strong {
+  display: block;
+  margin-top: 10px;
+}
+
+.evidenceCardV2 {
+  position: relative;
+}
+
+.evidenceCardV2 em {
+  align-self: start;
+  background: #ecfdf8;
+  border: 1px solid #b9ddd6;
+  border-radius: 999px;
+  color: var(--teal);
+  font-style: normal;
+  font-weight: 900;
+  padding: 6px 9px;
+}
+
+.resourceTokenGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.resourceToken {
+  justify-items: start;
+  min-height: 132px;
+}
+
+.resourceToken > span {
+  font-size: 1.6rem;
+}
+
+.resourceToken small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.finalOutputGrid textarea {
+  min-height: 132px;
+}
+
+.pitchBlock {
+  border-top: 5px solid var(--green);
+}
+
+.pitchTextarea {
+  min-height: 150px;
+  width: 100%;
+}
+
+.pitchBlock .button {
+  margin-top: 12px;
+}
+
+.aiReviewBlock {
+  border-top: 5px solid var(--teal);
+}
+
+.reviewGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.reviewGrid article {
+  background: #fbfcfd;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.reviewGrid article.wide {
+  grid-column: 1 / -1;
+}
+
+.reviewGrid p {
+  color: var(--muted);
+}
+
+.reviewScores {
+  margin-top: 14px;
+}
+
+@media (max-width: 1250px) {
+  .workspaceLayoutV2 {
+    grid-template-columns: 1fr;
+  }
+
+  .referencePanel,
+  .decisionPanel {
+    position: static;
+  }
+
+  .mainWorkPanel {
+    order: 1;
+  }
+
+  .referencePanel {
+    order: 2;
+  }
+
+  .decisionPanel {
+    order: 3;
+  }
+
+  .activityGridV2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1050px) {
   .heroGrid,
   .workspaceLayout,

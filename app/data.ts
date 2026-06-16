@@ -35,6 +35,7 @@ export type EventChoice = {
 };
 
 export type ConsequenceEvent = {
+  category?: string;
   title: string;
   description: string;
   consequence: string;
@@ -931,41 +932,52 @@ const evidenceByIssue: Record<string, Array<[EvidenceCard["type"], string, strin
   ]
 };
 
-const eventsByIssue: Record<string, Array<[string, string, string, ConsequenceEvent["choices"]]>> = {
+type EventSeed = [string, string, string, ConsequenceEvent["choices"], string?];
+
+const sharedPolicyEventPool: EventSeed[] = [
+  ["Political Priority Shift", "A senior leader asks for faster, more visible results than the current pilot can credibly deliver.", "Teams must protect co-design quality while responding to political urgency.", commonChoices.demand, "Political Event"],
+  ["Budget Hold", "Finance colleagues pause discretionary spending until the pilot shows clearer value for money.", "The proposal needs a lower-cost path that still protects equity and learning.", commonChoices.budgetCut, "Budget Event"],
+  ["Critical Media Question", "A media outlet asks whether the proposal is fair, evidence-based, and worth public investment.", "Teams must explain the public value and evidence behind the design.", commonChoices.data, "Media Event"],
+  ["Community Resistance", "A community group says the proposal was designed without enough local voice.", "The team must rebuild trust and show how participation will change decisions.", commonChoices.trust, "Community Resistance Event"],
+  ["Workforce Capacity Alert", "Delivery teams warn that the current model adds too many steps to already stretched staff.", "The service design must become simpler and more realistic to implement.", commonChoices.capacity, "Workforce Event"],
+  ["Emergency Disruption", "An urgent incident disrupts normal service planning and exposes who is most vulnerable.", "The team must adapt the pilot without abandoning the priority group.", commonChoices.access, "Emergency Event"]
+];
+
+const eventsByIssue: Record<string, EventSeed[]> = {
   "mental-health-access": [
-    ["Waiting List Pressure", "Demand for mental health support increases before the pilot begins.", "Protect early access without promising capacity the service cannot deliver.", commonChoices.demand],
-    ["Referral Pathway Confusion", "People and frontline staff are unclear about the right mental health referral route.", "Simplify access points and clarify responsibility.", commonChoices.access],
-    ["Confidentiality Concern", "A participant worries that seeking mental health support may not remain private.", "Explain confidentiality and data use clearly.", commonChoices.data],
-    ["Staff Burnout Pressure", "Mental health staff report workload concerns.", "Reduce avoidable work and protect staff time.", commonChoices.capacity],
-    ["New Early Support Funding", "A short-term fund becomes available for early mental health support.", "Test quickly only if learning goals are specific.", commonChoices.demand]
+    ["Waiting List Pressure", "Demand for mental health support increases before the pilot begins.", "Protect early access without promising capacity the service cannot deliver.", commonChoices.demand, "Workforce Event"],
+    ["Referral Pathway Confusion", "People and frontline staff are unclear about the right mental health referral route.", "Simplify access points and clarify responsibility.", commonChoices.access, "Community Resistance Event"],
+    ["Confidentiality Concern", "A participant worries that seeking mental health support may not remain private.", "Explain confidentiality and data use clearly.", commonChoices.data, "Media Event"],
+    ["Staff Burnout Pressure", "Mental health staff report workload concerns.", "Reduce avoidable work and protect staff time.", commonChoices.capacity, "Workforce Event"],
+    ["New Early Support Funding", "A short-term fund becomes available for early mental health support.", "Test quickly only if learning goals are specific.", commonChoices.demand, "Budget Event"]
   ],
   "maternal-health-access": [
-    ["Midwife Capacity Pressure", "Maternity staff identify pressure around appointment time and follow-up.", "Protect continuity while keeping workload realistic.", commonChoices.capacity],
-    ["Transport Disruption", "Families report difficulty reaching maternal health appointments.", "Reduce travel friction or offer closer routes.", commonChoices.access],
-    ["Missed Appointment Pattern", "Frontline teams notice repeated missed antenatal or postnatal contacts.", "Understand barriers before assuming non-engagement.", commonChoices.trust],
-    ["Family Support Request", "Families ask to be included in maternal health communication.", "Balance family support, consent, and the woman's priorities.", commonChoices.data],
-    ["Community Outreach Opportunity", "A trusted community setting offers space for maternal health engagement.", "Build trust only if roles and safeguarding are clear.", commonChoices.trust]
+    ["Midwife Capacity Pressure", "Maternity staff identify pressure around appointment time and follow-up.", "Protect continuity while keeping workload realistic.", commonChoices.capacity, "Workforce Event"],
+    ["Transport Disruption", "Families report difficulty reaching maternal health appointments.", "Reduce travel friction or offer closer routes.", commonChoices.access, "Emergency Event"],
+    ["Missed Appointment Pattern", "Frontline teams notice repeated missed antenatal or postnatal contacts.", "Understand barriers before assuming non-engagement.", commonChoices.trust, "Community Resistance Event"],
+    ["Family Support Request", "Families ask to be included in maternal health communication.", "Balance family support, consent, and the woman's priorities.", commonChoices.data, "Political Event"],
+    ["Community Outreach Opportunity", "A trusted community setting offers space for maternal health engagement.", "Build trust only if roles and safeguarding are clear.", commonChoices.trust, "Budget Event"]
   ],
   "vaccine-hesitancy": [
-    ["Social Media Misinformation Surge", "Misleading vaccine claims circulate in community channels.", "Respond without dismissing legitimate questions.", commonChoices.trust],
-    ["Vaccine Supply Delay", "A planned vaccination session cannot offer vaccines on the expected day.", "Protect confidence through clear communication and follow-up.", commonChoices.capacity],
-    ["Community Concern Meeting", "Parents request a meeting before supporting the vaccine proposal.", "Create space for questions and trusted explanation.", commonChoices.trust],
-    ["School Consent Issue", "Consent processes for school-linked vaccination are misunderstood.", "Clarify consent, choice, and information routes.", commonChoices.data],
-    ["Outbreak Warning", "Public health teams warn of rising vaccine-preventable disease risk.", "Act quickly while preserving trust.", commonChoices.demand]
+    ["Social Media Misinformation Surge", "Misleading vaccine claims circulate in community channels.", "Respond without dismissing legitimate questions.", commonChoices.trust, "Media Event"],
+    ["Vaccine Supply Delay", "A planned vaccination session cannot offer vaccines on the expected day.", "Protect confidence through clear communication and follow-up.", commonChoices.capacity, "Budget Event"],
+    ["Community Concern Meeting", "Parents request a meeting before supporting the vaccine proposal.", "Create space for questions and trusted explanation.", commonChoices.trust, "Community Resistance Event"],
+    ["School Consent Issue", "Consent processes for school-linked vaccination are misunderstood.", "Clarify consent, choice, and information routes.", commonChoices.data, "Political Event"],
+    ["Outbreak Warning", "Public health teams warn of rising vaccine-preventable disease risk.", "Act quickly while preserving trust.", commonChoices.demand, "Emergency Event"]
   ],
   "school-dropout-prevention": [
-    ["Attendance Warning", "A student group shows signs of persistent absence.", "Intervene early without blaming students or families.", commonChoices.access],
-    ["Family Pressure Emerges", "Students describe work, caring responsibilities, or household stress affecting attendance.", "Respond to practical pressures as well as school rules.", commonChoices.trust],
-    ["Safeguarding Concern", "A case raises safeguarding questions during the pilot.", "Protect students and follow appropriate referral routes.", commonChoices.data],
-    ["Teacher Workload Concern", "Teachers say the proposal adds too many tracking tasks.", "Simplify roles and avoid unrealistic administration.", commonChoices.capacity],
-    ["Student Voice Challenge", "Students say the proposed support does not address belonging.", "Adjust the idea using student experience.", commonChoices.trust]
+    ["Attendance Warning", "A student group shows signs of persistent absence.", "Intervene early without blaming students or families.", commonChoices.access, "Emergency Event"],
+    ["Family Pressure Emerges", "Students describe work, caring responsibilities, or household stress affecting attendance.", "Respond to practical pressures as well as school rules.", commonChoices.trust, "Community Resistance Event"],
+    ["Safeguarding Concern", "A case raises safeguarding questions during the pilot.", "Protect students and follow appropriate referral routes.", commonChoices.data, "Political Event"],
+    ["Teacher Workload Concern", "Teachers say the proposal adds too many tracking tasks.", "Simplify roles and avoid unrealistic administration.", commonChoices.capacity, "Workforce Event"],
+    ["Student Voice Challenge", "Students say the proposed support does not address belonging.", "Adjust the idea using student experience.", commonChoices.trust, "Media Event"]
   ],
   "climate-adaptation": [
-    ["Extreme Heat Warning", "A heat alert is issued during pilot planning.", "Prioritise vulnerable groups and practical communication.", commonChoices.demand],
-    ["Flood Preparedness Concern", "Residents ask how warnings and support will reach them.", "Connect emergency communication with local trust.", commonChoices.access],
-    ["Infrastructure Delay", "A planned physical adaptation will take longer than expected.", "Identify a short-term protective action.", commonChoices.capacity],
-    ["Public Resistance", "Residents question whether adaptation measures are fair or necessary.", "Explain public value and listen to concerns.", commonChoices.trust],
-    ["Data Sharing Barrier", "Agencies disagree on sharing climate-risk information.", "Use safe data governance and clear accountability.", commonChoices.data]
+    ["Extreme Heat Warning", "A heat alert is issued during pilot planning.", "Prioritise vulnerable groups and practical communication.", commonChoices.demand, "Emergency Event"],
+    ["Flood Preparedness Concern", "Residents ask how warnings and support will reach them.", "Connect emergency communication with local trust.", commonChoices.access, "Emergency Event"],
+    ["Infrastructure Delay", "A planned physical adaptation will take longer than expected.", "Identify a short-term protective action.", commonChoices.capacity, "Workforce Event"],
+    ["Public Resistance", "Residents question whether adaptation measures are fair or necessary.", "Explain public value and listen to concerns.", commonChoices.trust, "Community Resistance Event"],
+    ["Data Sharing Barrier", "Agencies disagree on sharing climate-risk information.", "Use safe data governance and clear accountability.", commonChoices.data, "Political Event"]
   ]
 };
 
@@ -1035,7 +1047,8 @@ function buildScopedIssuePack(context: ContextId, issueId: string): IssueContent
     impact,
     response
   }));
-  const events = eventsByIssue[issueId].map(([title, description, consequence, choices]) => ({
+  const events = [...eventsByIssue[issueId], ...sharedPolicyEventPool].map(([title, description, consequence, choices, category]) => ({
+    category,
     title,
     description: `${description} Context: ${countryName(context)}.`,
     consequence,

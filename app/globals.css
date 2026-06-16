@@ -2018,6 +2018,14 @@ textarea:focus {
   margin-top: 14px;
 }
 
+.stakeholderVotingArea {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
 .stakeholderFocusList article {
   background: #fbfcfd;
   border: 1px solid var(--line);
@@ -2031,6 +2039,22 @@ textarea:focus {
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 700;
+}
+
+.compactVoteGrid {
+  grid-template-columns: 1fr;
+}
+
+.compactVoteGrid .voteCard {
+  padding: 12px;
+}
+
+.compactVoteGrid .voteButtons {
+  grid-template-columns: 1fr;
+}
+
+.compactVoteSummary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .guidanceCard {
@@ -2123,6 +2147,15 @@ textarea:focus {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.centerResourceGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.centerEvidenceGrid,
+.centerConstraintGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .resourceToken {
   justify-items: start;
   min-height: 132px;
@@ -2208,6 +2241,12 @@ textarea:focus {
   }
 
   .activityGridV2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .centerResourceGrid,
+  .centerEvidenceGrid,
+  .centerConstraintGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -2539,6 +2578,13 @@ textarea:focus {
   }
 
   .wheelMini {
+    grid-template-columns: 1fr;
+  }
+
+  .centerResourceGrid,
+  .centerEvidenceGrid,
+  .centerConstraintGrid,
+  .activityGridV2 {
     grid-template-columns: 1fr;
   }
 

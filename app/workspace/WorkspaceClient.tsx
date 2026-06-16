@@ -694,6 +694,53 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
                 </article>
               ))}
             </div>
+            <div className="stakeholderVotingArea">
+              <div className="sectionHead compact">
+                <p className="eyebrow">Stakeholder engagement</p>
+                <h3>Private stakeholder ballots</h3>
+                <p className="ruleText">
+                  Record each vote from the confidential role perspective.
+                </p>
+              </div>
+              <div className="voteGrid compactVoteGrid">
+                {issuePack.stakeholders.map((stakeholder) => (
+                  <div className="voteCard" key={stakeholder.title}>
+                    <strong>{stakeholder.title}</strong>
+                    <span className="privateVoteStatus">
+                      {state.stakeholderVotes[stakeholder.title] ? "Vote submitted" : "Awaiting vote"}
+                    </span>
+                    <div className="voteButtons">
+                      {[
+                        ["support", "Support"],
+                        ["changes", "Support with Changes"],
+                        ["oppose", "Oppose"]
+                      ].map(([value, label]) => (
+                        <button
+                          className={state.stakeholderVotes[stakeholder.title] === value ? "filter active" : "filter"}
+                          key={value}
+                          onClick={() => updateStakeholderVote(stakeholder.title, value as WorkspaceState["stakeholderVotes"][string])}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {castVotes === issuePack.stakeholders.length ? (
+                <div className="voteSummary compactVoteSummary">
+                  <div><strong>{supportCount}</strong><span>Support</span></div>
+                  <div><strong>{changesCount}</strong><span>Changes</span></div>
+                  <div><strong>{opposeCount}</strong><span>Oppose</span></div>
+                  <div><strong>{approvalPercentage}%</strong><span>Approval</span></div>
+                </div>
+              ) : (
+                <p className="mutedText">Summary appears after all {issuePack.stakeholders.length} votes are submitted.</p>
+              )}
+              {castVotes === issuePack.stakeholders.length && approvalPercentage < 70 ? (
+                <p className="warningText">Revise proposal before implementation.</p>
+              ) : null}
+            </div>
           </section>
 
           <section className="railBlock wisdomSection">
@@ -753,50 +800,71 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
 
           <section className="contentBlock">
             <div className="sectionHead compact">
-              <p className="eyebrow">Stakeholder engagement</p>
-              <h2>Private stakeholder ballots.</h2>
+              <p className="eyebrow">Resource Tokens</p>
+              <h2>Allocate limited resources.</h2>
               <p className="ruleText">
-                Each stakeholder votes from their confidential role perspective. The facilitator records ballots here.
+                Allocate up to {resourceLimit}. Remaining tokens: <strong>{remainingTokens}</strong>
               </p>
             </div>
-            <div className="voteGrid">
-              {issuePack.stakeholders.map((stakeholder) => (
-                <div className="voteCard" key={stakeholder.title}>
-                  <strong>{stakeholder.title}</strong>
-                  <span className="privateVoteStatus">
-                    {state.stakeholderVotes[stakeholder.title] ? "Vote submitted" : "Awaiting vote"}
-                  </span>
-                  <div className="voteButtons">
-                    {[
-                      ["support", "Support"],
-                      ["changes", "Support with Changes"],
-                      ["oppose", "Oppose"]
-                    ].map(([value, label]) => (
-                      <button
-                        className={state.stakeholderVotes[stakeholder.title] === value ? "filter active" : "filter"}
-                        key={value}
-                        onClick={() => updateStakeholderVote(stakeholder.title, value as WorkspaceState["stakeholderVotes"][string])}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            <div className="tokenGrid resourceTokenGrid centerResourceGrid">
+              {resourceTokens.map((token) => (
+                <button
+                  className={state.selectedTokens.includes(token.id) ? "token active resourceToken" : "token resourceToken"}
+                  disabled={!state.selectedTokens.includes(token.id) && state.selectedTokens.length >= resourceLimit}
+                  key={token.id}
+                  onClick={() => toggleToken(token.id)}
+                >
+                  <span>{resourceIcons[token.id] ?? "•"}</span>
+                  <strong>{token.name}</strong>
+                  <small>{token.description}</small>
+                </button>
               ))}
             </div>
-            {castVotes === issuePack.stakeholders.length ? (
-              <div className="voteSummary">
-                <div><strong>{supportCount}</strong><span>Support</span></div>
-                <div><strong>{changesCount}</strong><span>Support with changes</span></div>
-                <div><strong>{opposeCount}</strong><span>Oppose</span></div>
-                <div><strong>{approvalPercentage}%</strong><span>Approval Rate</span></div>
-              </div>
-            ) : (
-              <p className="mutedText">Stakeholder Support Summary will appear after all {issuePack.stakeholders.length} votes are submitted.</p>
-            )}
-            {castVotes === issuePack.stakeholders.length && approvalPercentage < 70 ? (
-              <p className="warningText">Revise proposal before implementation.</p>
-            ) : null}
+          </section>
+
+          <section className="contentBlock">
+            <div className="sectionHead compact">
+              <p className="eyebrow">Evidence Pack</p>
+              <h2>Select evidence for the proposal.</h2>
+              <p className="ruleText">Selected evidence: <strong>{state.selectedEvidence.length}</strong>/2 minimum</p>
+            </div>
+            <div className="evidenceGrid centerEvidenceGrid">
+              {evidencePack.map((evidence) => (
+                <button
+                  className={state.selectedEvidence.includes(evidence.id) ? "evidenceCard active evidenceCardV2" : "evidenceCard evidenceCardV2"}
+                  key={evidence.id}
+                  onClick={() => toggleEvidence(evidence.id)}
+                >
+                  <span>{evidence.type}</span>
+                  <strong>{evidence.sourceTitle}</strong>
+                  <p><b>Key Insight:</b> {evidence.finding}</p>
+                  <small><b>Why It Matters:</b> {evidence.implication}</small>
+                  <small>{evidence.sourceOrganisation} · {evidence.sourceYear}</small>
+                  {state.selectedEvidence.includes(evidence.id) ? <em>✓ Selected</em> : null}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="contentBlock">
+            <div className="sectionHead compact">
+              <p className="eyebrow">Constraints</p>
+              <h2>Select constraints your plan must address.</h2>
+            </div>
+            <div className="constraintGrid centerConstraintGrid">
+              {issuePack.constraints.map((constraint) => (
+                <button
+                  className={state.selectedConstraints.includes(constraint.id) ? "constraintCard active" : "constraintCard"}
+                  key={constraint.id}
+                  onClick={() => toggleConstraint(constraint.id)}
+                >
+                  <strong>{constraint.title}</strong>
+                  <p>{constraint.description}</p>
+                  <span>{constraint.impact}</span>
+                  <small>{constraint.response}</small>
+                </button>
+              ))}
+            </div>
           </section>
 
           <section className="contentBlock">
@@ -808,37 +876,37 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
               <label>
                 Access problem
                 <span className="fieldPrompt">{fieldPrompts.problem}</span>
-                <textarea placeholder={fieldPlaceholders.problem} value={state.outputs.problem} onChange={(event) => updateOutput("problem", event.target.value)} />
+                <textarea value={state.outputs.problem} onChange={(event) => updateOutput("problem", event.target.value)} />
               </label>
               <label>
                 Key insight
                 <span className="fieldPrompt">{fieldPrompts.insight}</span>
-                <textarea placeholder={fieldPlaceholders.insight} value={state.outputs.insight} onChange={(event) => updateOutput("insight", event.target.value)} />
+                <textarea value={state.outputs.insight} onChange={(event) => updateOutput("insight", event.target.value)} />
               </label>
               <label>
                 Service improvement idea
                 <span className="fieldPrompt">{fieldPrompts.idea}</span>
-                <textarea placeholder={fieldPlaceholders.idea} value={state.outputs.idea} onChange={(event) => updateOutput("idea", event.target.value)} />
+                <textarea value={state.outputs.idea} onChange={(event) => updateOutput("idea", event.target.value)} />
               </label>
               <label>
                 Prototype or journey
                 <span className="fieldPrompt">{fieldPrompts.prototype}</span>
-                <textarea placeholder={fieldPlaceholders.prototype} value={state.outputs.prototype} onChange={(event) => updateOutput("prototype", event.target.value)} />
+                <textarea value={state.outputs.prototype} onChange={(event) => updateOutput("prototype", event.target.value)} />
               </label>
               <label>
                 Equity adjustment
                 <span className="fieldPrompt">{fieldPrompts.equity}</span>
-                <textarea placeholder={fieldPlaceholders.equity} value={state.outputs.equity} onChange={(event) => updateOutput("equity", event.target.value)} />
+                <textarea value={state.outputs.equity} onChange={(event) => updateOutput("equity", event.target.value)} />
               </label>
               <label>
                 First test
                 <span className="fieldPrompt">{fieldPrompts.test}</span>
-                <textarea placeholder={fieldPlaceholders.test} value={state.outputs.test} onChange={(event) => updateOutput("test", event.target.value)} />
+                <textarea value={state.outputs.test} onChange={(event) => updateOutput("test", event.target.value)} />
               </label>
               <label className="wide">
                 Success measures
                 <span className="fieldPrompt">{fieldPrompts.measures}</span>
-                <textarea placeholder={fieldPlaceholders.measures} value={state.outputs.measures} onChange={(event) => updateOutput("measures", event.target.value)} />
+                <textarea value={state.outputs.measures} onChange={(event) => updateOutput("measures", event.target.value)} />
               </label>
             </div>
           </section>
@@ -931,66 +999,6 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
           </section>
 
           <section className="railBlock">
-            <p className="eyebrow">Evidence Pack</p>
-            <p className="ruleText">Selected evidence: <strong>{state.selectedEvidence.length}</strong>/2 minimum</p>
-            <div className="evidenceGrid decisionStack">
-              {evidencePack.map((evidence) => (
-                <button
-                  className={state.selectedEvidence.includes(evidence.id) ? "evidenceCard active evidenceCardV2" : "evidenceCard evidenceCardV2"}
-                  key={evidence.id}
-                  onClick={() => toggleEvidence(evidence.id)}
-                >
-                  <span>{evidence.type}</span>
-                  <strong>{evidence.sourceTitle}</strong>
-                  <p><b>Key Insight:</b> {evidence.finding}</p>
-                  <small><b>Why It Matters:</b> {evidence.implication}</small>
-                  <small>{evidence.sourceOrganisation} · {evidence.sourceYear}</small>
-                  {state.selectedEvidence.includes(evidence.id) ? <em>✓ Selected</em> : null}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="railBlock">
-            <p className="eyebrow">Resource Tokens</p>
-            <p className="ruleText">
-              Allocate up to {resourceLimit}. Remaining tokens: <strong>{remainingTokens}</strong>
-            </p>
-            <div className="tokenGrid resourceTokenGrid">
-              {resourceTokens.map((token) => (
-                <button
-                  className={state.selectedTokens.includes(token.id) ? "token active resourceToken" : "token resourceToken"}
-                  disabled={!state.selectedTokens.includes(token.id) && state.selectedTokens.length >= resourceLimit}
-                  key={token.id}
-                  onClick={() => toggleToken(token.id)}
-                >
-                  <span>{resourceIcons[token.id] ?? "•"}</span>
-                  <strong>{token.name}</strong>
-                  <small>{token.description}</small>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="railBlock">
-            <p className="eyebrow">Constraints</p>
-            <div className="constraintGrid decisionStack">
-              {issuePack.constraints.map((constraint) => (
-                <button
-                  className={state.selectedConstraints.includes(constraint.id) ? "constraintCard active" : "constraintCard"}
-                  key={constraint.id}
-                  onClick={() => toggleConstraint(constraint.id)}
-                >
-                  <strong>{constraint.title}</strong>
-                  <p>{constraint.description}</p>
-                  <span>{constraint.impact}</span>
-                  <small>{constraint.response}</small>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="railBlock facilitatorPanel">
             <p className="eyebrow">Facilitator controls</p>
             <div className="difficultyGrid">
               {Object.entries(difficultySettings).map(([key, setting]) => (

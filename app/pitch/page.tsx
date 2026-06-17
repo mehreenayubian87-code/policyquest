@@ -122,7 +122,7 @@ export default function PitchPage() {
 
   return (
     <main>
-      <header className="pageHeader finalHeader">
+      <header className={`pageHeader finalHeader pageHero pitchHero ${issue.category}Hero ${context.id}Hero`}>
         <Link className="backLink" href="/final">Back to final report</Link>
         <div>
           <p className="eyebrow">Final Cabinet Pitch</p>

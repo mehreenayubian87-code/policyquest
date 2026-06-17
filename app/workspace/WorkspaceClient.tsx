@@ -612,11 +612,11 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
 
   return (
     <main>
-      <header className="workspaceHeader">
+      <header className={`workspaceHeader pageHero workspaceHero ${issue.category}Hero ${context.id}Hero`}>
+        <Link className="backLink" href="/select">
+          Change issue
+        </Link>
         <div>
-          <Link className="backLink" href="/select">
-            Change issue
-          </Link>
           <p className="eyebrow">{context.name} context · {categoryName}</p>
           <h1>{issue.title}</h1>
           <p>{issue.challenge}</p>
@@ -743,22 +743,6 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
             </div>
           </section>
 
-          <section className="railBlock wisdomSection">
-            <div className="sectionHead compact">
-              <p className="eyebrow">🧠 Co-Design Principles</p>
-              <p className="ruleText">
-                Use these reminders throughout the activity to challenge assumptions and improve your decisions.
-              </p>
-            </div>
-            <div className="wisdomStack">
-              {wisdomCards.map((card) => (
-                <article className="wisdomItem guidanceCard" key={card.title}>
-                  <strong>{card.title}</strong>
-                  <p>{card.text}</p>
-                </article>
-              ))}
-            </div>
-          </section>
         </aside>
 
         <section className="workspaceMain mainWorkPanel">
@@ -1018,6 +1002,23 @@ export default function WorkspaceClient({ issueId, contextId }: { issueId: strin
             <button className="button light full" onClick={revealChallengeUpdate}>Reveal challenge update</button>
             <Link className="button light full" href={`/guide?issue=${issue.id}&context=${context.id}`}>Facilitator guide</Link>
             <button className="button light full dangerButton" onClick={resetSession}>Reset session</button>
+          </section>
+
+          <section className="railBlock wisdomSection">
+            <div className="sectionHead compact">
+              <p className="eyebrow">🧠 Co-Design Principles</p>
+              <p className="ruleText">
+                Use these reminders throughout the activity to challenge assumptions and improve your decisions.
+              </p>
+            </div>
+            <div className="wisdomStack">
+              {wisdomCards.map((card) => (
+                <article className="wisdomItem guidanceCard" key={card.title}>
+                  <strong>{card.title}</strong>
+                  <p>{card.text}</p>
+                </article>
+              ))}
+            </div>
           </section>
         </aside>
       </section>

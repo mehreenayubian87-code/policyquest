@@ -20,7 +20,7 @@ export default async function MissionPage({
 
   return (
     <main>
-      <header className="pageHeader">
+      <header className={`pageHeader pageHero missionHero ${issue.category}Hero ${context.id}Hero`}>
         <Link className="backLink" href={`/roles?issue=${issue.id}&context=${context.id}`}>
           Back to roles
         </Link>

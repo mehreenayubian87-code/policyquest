@@ -24,7 +24,7 @@ export default async function GuidePage({
 
   return (
     <main>
-      <header className="pageHeader finalHeader">
+      <header className={`pageHeader finalHeader pageHero guideHero ${issue.category}Hero ${context.id}Hero`}>
         <Link className="backLink" href={`/workspace?issue=${issue.id}&context=${context.id}`}>
           Back to workspace
         </Link>

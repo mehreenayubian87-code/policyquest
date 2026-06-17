@@ -4,7 +4,7 @@ import { contextPacks } from "../data";
 export default function ContextPage() {
   return (
     <main>
-      <header className="pageHeader">
+      <header className="pageHeader pageHero contextHero">
         <Link className="backLink" href="/">
           PolicyQuest
         </Link>

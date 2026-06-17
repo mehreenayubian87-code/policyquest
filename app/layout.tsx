@@ -16,9 +16,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const year = new Date().getFullYear();
+
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="siteFooter">
+          <span>&copy; {year} PolicyQuest. All rights reserved.</span>
+          <span>
+            Developed by{" "}
+            <strong>
+              Dr. Mehreen Afsar Jadoon
+            </strong>{" "}
+            (College of Public Policy, Hamad Bin Khalifa University, Doha, Qatar)
+          </span>
+        </footer>
+      </body>
     </html>
   );
 }

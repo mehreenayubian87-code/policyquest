@@ -59,7 +59,7 @@ export default function RolesClient({
 
   return (
     <main>
-      <header className="pageHeader finalHeader">
+      <header className={`pageHeader finalHeader pageHero rolesHero ${issue.category}Hero ${context.id}Hero`}>
         <Link className="backLink" href={`/select?context=${context.id}`}>
           Change issue
         </Link>

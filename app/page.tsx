@@ -7,7 +7,7 @@ export default function HomePage() {
       <section className="hero">
         <div className="heroMedia" aria-hidden="true">
           <Image
-            src="/images/Policy1.jpg"
+            src="/images/mainpage.jpg"
             alt=""
             fill
             priority

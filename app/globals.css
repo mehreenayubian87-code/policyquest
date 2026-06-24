@@ -2399,16 +2399,21 @@ textarea:focus {
   --hero-position: center 44%;
 }
 
-.rolesHero,
+.rolesHero {
+  --hero-accent: rgba(212, 165, 116, 0.34);
+  --hero-image: url("/images/policy2.jpg");
+  --hero-position: 56% 48%;
+}
+
 .privateRoleHero {
   --hero-accent: rgba(212, 165, 116, 0.34);
-  --hero-image: url("/images/Page3.jpg");
-  --hero-position: 56% 48%;
+  --hero-image: url("/images/policyquest-hero.jpg");
+  --hero-position: 50% 46%;
 }
 
 .missionHero {
   --hero-accent: rgba(184, 115, 75, 0.34);
-  --hero-image: url("/images/Page3.jpg");
+  --hero-image: url("/images/Policy1.jpg");
   --hero-position: 48% 42%;
 }
 
@@ -2483,14 +2488,32 @@ textarea:focus {
   padding: 8px 13px;
 }
 
-.pageHeader.pageHero.selectHero,
-.pageHeader.pageHero.missionHero,
-.pageHeader.pageHero.rolesHero,
-.pageHeader.pageHero.privateRoleHero {
+.pageHeader.pageHero.selectHero {
   background-image:
     linear-gradient(135deg, rgba(31, 42, 53, 0.88), rgba(47, 59, 71, 0.72) 48%, rgba(74, 90, 104, 0.48)),
     radial-gradient(circle at 82% 18%, var(--hero-accent) 0%, transparent 42%),
     url("/images/Page3.jpg");
+}
+
+.pageHeader.pageHero.missionHero {
+  background-image:
+    linear-gradient(135deg, rgba(31, 42, 53, 0.88), rgba(47, 59, 71, 0.72) 48%, rgba(74, 90, 104, 0.48)),
+    radial-gradient(circle at 82% 18%, var(--hero-accent) 0%, transparent 42%),
+    url("/images/Policy1.jpg");
+}
+
+.pageHeader.pageHero.rolesHero {
+  background-image:
+    linear-gradient(135deg, rgba(31, 42, 53, 0.88), rgba(47, 59, 71, 0.72) 48%, rgba(74, 90, 104, 0.48)),
+    radial-gradient(circle at 82% 18%, var(--hero-accent) 0%, transparent 42%),
+    url("/images/policy2.jpg");
+}
+
+.pageHeader.pageHero.privateRoleHero {
+  background-image:
+    linear-gradient(135deg, rgba(31, 42, 53, 0.88), rgba(47, 59, 71, 0.72) 48%, rgba(74, 90, 104, 0.48)),
+    radial-gradient(circle at 82% 18%, var(--hero-accent) 0%, transparent 42%),
+    url("/images/policyquest-hero.jpg");
 }
 
 .workspaceHeader.pageHero.workspaceHero {

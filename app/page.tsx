@@ -15,7 +15,17 @@ export default function HomePage() {
           />
         </div>
         <nav className="nav">
-          <div className="brand">PolicyQuest</div>
+          <div className="brand">
+            <Image
+              className="brandLogo"
+              src="/images/logo.png"
+              alt=""
+              width={38}
+              height={38}
+              priority
+            />
+            <span>PolicyQuest</span>
+          </div>
         </nav>
         <div className="heroGrid">
           <div className="heroCopy">

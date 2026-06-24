@@ -141,9 +141,20 @@ main {
 }
 
 .brand {
+  align-items: center;
+  display: inline-flex;
   font-size: 1.15rem;
   font-weight: 800;
+  gap: 10px;
   letter-spacing: 0;
+}
+
+.brandLogo {
+  border-radius: 10px;
+  flex: 0 0 auto;
+  height: 38px;
+  object-fit: contain;
+  width: 38px;
 }
 
 .navLink,

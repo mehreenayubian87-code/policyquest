@@ -3,7 +3,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "PolicyQuest",
-  description: "A co-design toolkit platform for policy teams and students."
+  description: "A co-design toolkit platform for policy teams and students.",
+  icons: {
+    icon: "/images/logo.png",
+    shortcut: "/images/logo.png",
+    apple: "/images/logo.png"
+  }
 };
 
 export const viewport: Viewport = {

@@ -25,7 +25,7 @@ export default async function PrivateRolePage({
 
   return (
     <main>
-      <header className="pageHeader">
+      <header className={`pageHeader pageHero privateRoleHero ${issue.category}Hero ${context.id}Hero`}>
         <Link className="backLink" href={`/roles?issue=${issue.id}&context=${context.id}`}>
           Back to role assignment
         </Link>

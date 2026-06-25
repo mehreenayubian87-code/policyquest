@@ -20,7 +20,7 @@ export default function SelectClient() {
 
   return (
     <main>
-      <header className="pageHeader">
+      <header className={`pageHeader pageHero selectHero ${context.id}Hero`}>
         <Link className="backLink" href="/context">
           Change context
         </Link>

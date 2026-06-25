@@ -14,6 +14,7 @@ export type WorkspaceState = {
   paused: boolean;
   activeChallengeUpdate: string;
   eventHistory: {
+    category?: string;
     title: string;
     description: string;
     consequence: string;
@@ -22,6 +23,7 @@ export type WorkspaceState = {
     drawnAt: string;
   }[];
   currentEvent?: {
+    category?: string;
     title: string;
     description: string;
     consequence: string;
@@ -56,6 +58,7 @@ export type WorkspaceState = {
     equity: string;
     test: string;
     measures: string;
+    policyPitch: string;
   };
   assistantOutputs: {
     policyBrief: string;
@@ -86,7 +89,8 @@ export const emptyOutputs: WorkspaceState["outputs"] = {
   prototype: "",
   equity: "",
   test: "",
-  measures: ""
+  measures: "",
+  policyPitch: ""
 };
 
 export const emptyAssistantOutputs: WorkspaceState["assistantOutputs"] = {

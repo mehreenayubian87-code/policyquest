@@ -7,7 +7,7 @@ export default function HomePage() {
       <section className="hero">
         <div className="heroMedia" aria-hidden="true">
           <Image
-            src="/images/policyquest-hero.jpg"
+            src="/images/mainpage.jpg"
             alt=""
             fill
             priority
@@ -15,7 +15,17 @@ export default function HomePage() {
           />
         </div>
         <nav className="nav">
-          <div className="brand">PolicyQuest</div>
+          <div className="brand">
+            <Image
+              className="brandLogo"
+              src="/images/logo.png"
+              alt=""
+              width={38}
+              height={38}
+              priority
+            />
+            <span>PolicyQuest</span>
+          </div>
         </nav>
         <div className="heroGrid">
           <div className="heroCopy">
@@ -41,6 +51,17 @@ export default function HomePage() {
               </Link>
             </div>
             <p className="ctaSupport">Collaborative simulation for classrooms and workshops.</p>
+            <aside className="fundingPanel" aria-label="Project funding and development credit">
+              <p className="fundingKicker">Project funding</p>
+              <p>
+                <strong>HBKU-INT-VPR-FRG-03-08</strong>: Visualizing Adaptive and Transformative Governance:
+                Qatar at the Nexus of Local, Regional, Translational, and Global Change.
+              </p>
+              <p>
+                <span>LPI: Dr. Evren Tok</span>
+                <span>Developed by Dr. Mehreen Afsar Jadoon</span>
+              </p>
+            </aside>
           </div>
         </div>
       </section>

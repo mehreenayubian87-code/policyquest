@@ -3,7 +3,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "PolicyQuest",
-  description: "A co-design toolkit platform for policy teams and students."
+  description: "A co-design toolkit platform for policy teams and students.",
+  icons: {
+    icon: "/images/logo.png",
+    shortcut: "/images/logo.png",
+    apple: "/images/logo.png"
+  }
 };
 
 export const viewport: Viewport = {
@@ -16,9 +21,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const year = new Date().getFullYear();
+
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="siteFooter">
+          <span>&copy; {year} PolicyQuest. All rights reserved.</span>
+          <span>
+            Developed by{" "}
+            <strong>
+              Dr. Mehreen Afsar Jadoon
+            </strong>{" "}
+            (College of Public Policy, Hamad Bin Khalifa University, Doha, Qatar)
+          </span>
+        </footer>
+      </body>
     </html>
   );
 }

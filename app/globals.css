@@ -316,6 +316,78 @@ main {
   margin-top: 14px;
 }
 
+.fundingPanel {
+  background:
+    linear-gradient(135deg, rgba(255, 248, 231, 0.96), rgba(232, 194, 169, 0.9)),
+    rgba(255, 248, 231, 0.94);
+  border: 1px solid rgba(255, 248, 231, 0.78);
+  border-left: 6px solid var(--gold);
+  border-radius: 14px;
+  box-shadow: 0 24px 54px rgba(31, 42, 53, 0.32);
+  color: var(--ink-strong);
+  display: grid;
+  gap: 10px;
+  margin-top: clamp(18px, 2.8vw, 28px);
+  max-width: 820px;
+  padding: clamp(16px, 2.2vw, 22px);
+  position: relative;
+}
+
+.fundingPanel::before {
+  background: rgba(47, 59, 71, 0.08);
+  border-radius: 999px;
+  color: var(--copper-dark);
+  content: "Grant-supported project";
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 6px 10px;
+  position: absolute;
+  right: 14px;
+  text-transform: uppercase;
+  top: 14px;
+}
+
+.fundingPanel p {
+  margin: 0;
+}
+
+.fundingPanel p:not(.fundingKicker) {
+  font-size: clamp(0.86rem, 1.4vw, 0.98rem);
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+.fundingPanel strong {
+  color: var(--copper-dark);
+}
+
+.fundingPanel p:last-child {
+  color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.84rem;
+  font-weight: 800;
+  gap: 8px 10px;
+  margin-top: 2px;
+}
+
+.fundingPanel p:last-child span {
+  background: rgba(47, 59, 71, 0.08);
+  border: 1px solid rgba(93, 109, 123, 0.16);
+  border-radius: 999px;
+  padding: 7px 10px;
+}
+
+.fundingKicker {
+  color: var(--copper-dark);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  padding-right: 190px;
+  text-transform: uppercase;
+}
+
 .signalStrip {
   display: flex;
   flex-wrap: wrap;
@@ -3375,7 +3447,8 @@ textarea:focus {
   .filter,
   .heroBadge,
   .heroBadge strong,
-  .heroBadge span {
+  .heroBadge span,
+  .fundingPanel {
     max-width: 100%;
     overflow-wrap: anywhere;
   }
@@ -3394,8 +3467,19 @@ textarea:focus {
   .heroSubtitle,
   .lead,
   .ctaSupport,
+  .fundingPanel,
   .workspaceHeader p:last-child {
     max-width: 100%;
+  }
+
+  .fundingPanel::before {
+    justify-self: start;
+    position: static;
+    width: fit-content;
+  }
+
+  .fundingKicker {
+    padding-right: 0;
   }
 
   .heroGrid {
